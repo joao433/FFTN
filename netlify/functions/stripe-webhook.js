@@ -1,5 +1,5 @@
-const Stripe = require('stripe');
-const { createClient } = require('@supabase/supabase-js');
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
 // Lazy initialization of Stripe and Supabase clients
 function getStripe() {
@@ -29,7 +29,7 @@ function getSupabase() {
   });
 }
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   try {
     // 1. Obter a assinatura da Stripe nos headers (suporta minúsculas e maiúsculas)
     const signature =
