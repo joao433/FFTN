@@ -1,0 +1,6 @@
+{
+  "name": "Parque de Diversões",
+  "description": "Esquema de banco de dados e backend para site do Parque de Diversões com gestão de ingressos, festas, cardápio e pagamentos Stripe.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
