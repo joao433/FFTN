@@ -41,7 +41,7 @@ const TABLES: SchemaTable[] = [
       { name: 'id', type: 'uuid', pk: true, note: 'gen_random_uuid()' },
       { name: 'name', type: 'text', note: 'Ex: Day Pass, Passaporte VIP' },
       { name: 'description', type: 'text' },
-      { name: 'price_cents', type: 'integer', note: 'Preço em centavos (ex: 9900 = R$ 99,00)' },
+      { name: 'price_cents', type: 'integer', note: 'Preço em centavos de dólar USD (ex: 9900 = $99.00)' },
       { name: 'stripe_price_id', type: 'text (nullable)', note: 'ID do Price no catálogo Stripe' },
       { name: 'active', type: 'boolean', indexed: true, note: 'Default: true' },
       { name: 'display_order', type: 'integer', indexed: true, note: 'Default: 0' },

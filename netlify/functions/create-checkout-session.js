@@ -133,7 +133,7 @@ export const handler = async (event) => {
       line_items: [
         {
           price_data: {
-            currency: 'brl',
+            currency: 'usd',
             product_data: {
               name: pkg.name,
               description: pkg.description || undefined,
