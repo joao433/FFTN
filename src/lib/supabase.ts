@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { TicketPackageModel, PartyPackageModel } from '../types/database.ts';
+import type { TicketPackageModel, PartyPackageModel, MenuCategoryModel, MenuItemModel } from '../types/database.ts';
 
 // Default catalog fallback for initial load / preview
 export const DEFAULT_TICKET_PACKAGES: TicketPackageModel[] = [
@@ -80,6 +80,148 @@ export const DEFAULT_PARTY_PACKAGES: PartyPackageModel[] = [
     imageUrl: null,
     active: true,
     displayOrder: 3,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+export const DEFAULT_MENU_CATEGORIES: MenuCategoryModel[] = [
+  {
+    id: 'cat-1',
+    name: 'Hambúrgueres & Lanches',
+    displayOrder: 1,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'cat-2',
+    name: 'Porções & Snacks',
+    displayOrder: 2,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'cat-3',
+    name: 'Bebidas & Refrescos',
+    displayOrder: 3,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'cat-4',
+    name: 'Sobremesas & Doces',
+    displayOrder: 4,
+    active: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+export const DEFAULT_MENU_ITEMS: MenuItemModel[] = [
+  {
+    id: 'item-1',
+    categoryId: 'cat-1',
+    name: 'Monster Burger Duplo Angus',
+    description: 'Pão brioche tostado, 2 hambúrgueres angus 160g, cheddar cremoso derretido, bacon crocante e molho barbecue artesanal.',
+    priceCents: 1699, // $16.99
+    promoPriceCents: 1449, // $14.49 promo
+    imageUrl: null,
+    displayOrder: 1,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-2',
+    categoryId: 'cat-1',
+    name: 'Crispy Roller Chicken Burger',
+    description: 'Peito de frango super empanado crocante, salada coleslaw da casa, picles e maionese especial de páprica defumada.',
+    priceCents: 1399, // $13.99
+    promoPriceCents: null,
+    imageUrl: null,
+    displayOrder: 2,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-3',
+    categoryId: 'cat-2',
+    name: 'Mega Batata Rústica com Cheddar & Bacon',
+    description: 'Porção generosa de batatas rústicas com corte especial, molho cheddar quente e farofa de bacon.',
+    priceCents: 999, // $9.99
+    promoPriceCents: 799, // $7.99 promo
+    imageUrl: null,
+    displayOrder: 1,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-4',
+    categoryId: 'cat-2',
+    name: 'Nuggets de Frango Crocantes (12 un)',
+    description: 'Acompanha molho barbecue artesanal e molho honey mustard.',
+    priceCents: 849, // $8.49
+    promoPriceCents: null,
+    imageUrl: null,
+    displayOrder: 2,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-5',
+    categoryId: 'cat-3',
+    name: 'Copo Colecionável Refil Infinito (Parque Todo)',
+    description: 'Copo oficial temático com refil ilimitado de refrigerantes e sucos o dia todo em todas as estações do parque.',
+    priceCents: 1299, // $12.99
+    promoPriceCents: 999, // $9.99 promo
+    imageUrl: null,
+    displayOrder: 1,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-6',
+    categoryId: 'cat-3',
+    name: 'Milkshake Vulcão de Nutella & Ninho (500ml)',
+    description: 'Sorvete de baunilha cremoso batido com calda farta de Nutella e leite em pó.',
+    priceCents: 799, // $7.99
+    promoPriceCents: null,
+    imageUrl: null,
+    displayOrder: 2,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-7',
+    categoryId: 'cat-4',
+    name: 'Churros Espanhóis Gigantes (6 un)',
+    description: 'Polvilhados com açúcar e canela, servidos com potinhos generosos de doce de leite artesanal e chocolate quente.',
+    priceCents: 899, // $8.99
+    promoPriceCents: 699, // $6.99 promo
+    imageUrl: null,
+    displayOrder: 1,
+    available: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'item-8',
+    categoryId: 'cat-4',
+    name: 'Grand Sundae Montanha-Russa',
+    description: '3 bolas de sorvete, chantilly, calda quente de chocolate, castanhas e cereja.',
+    priceCents: 749, // $7.49
+    promoPriceCents: null,
+    imageUrl: null,
+    displayOrder: 2,
+    available: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -167,4 +309,70 @@ export async function fetchActivePartyPackages(): Promise<PartyPackageModel[]> {
   }
 
   return DEFAULT_PARTY_PACKAGES;
+}
+
+export async function fetchActiveMenuCategories(): Promise<MenuCategoryModel[]> {
+  const client = getClientSupabase();
+  if (client) {
+    try {
+      const { data, error } = await client
+        .from('menu_categories')
+        .select('*')
+        .eq('active', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return (data as Array<Record<string, any>>).map((item) => ({
+          id: item.id,
+          name: item.name,
+          displayOrder: Number(item.display_order ?? item.displayOrder ?? 0),
+          active: Boolean(item.active),
+          createdAt: item.created_at ?? item.createdAt ?? new Date().toISOString(),
+          updatedAt: item.updated_at ?? item.updatedAt ?? new Date().toISOString(),
+        }));
+      }
+    } catch (err) {
+      console.warn('Supabase fetch error, falling back to default menu categories:', err);
+    }
+  }
+
+  return DEFAULT_MENU_CATEGORIES;
+}
+
+export async function fetchActiveMenuItems(): Promise<MenuItemModel[]> {
+  const client = getClientSupabase();
+  if (client) {
+    try {
+      const { data, error } = await client
+        .from('menu_items')
+        .select('*')
+        .eq('available', true)
+        .order('display_order', { ascending: true });
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return (data as Array<Record<string, any>>).map((item) => ({
+          id: item.id,
+          categoryId: item.category_id ?? item.categoryId,
+          name: item.name,
+          description: item.description ?? null,
+          priceCents: Number(item.price_cents ?? item.priceCents ?? 0),
+          promoPriceCents:
+            item.promo_price_cents !== null && item.promo_price_cents !== undefined
+              ? Number(item.promo_price_cents)
+              : item.promoPriceCents !== null && item.promoPriceCents !== undefined
+              ? Number(item.promoPriceCents)
+              : null,
+          imageUrl: item.image_url ?? item.imageUrl ?? null,
+          displayOrder: Number(item.display_order ?? item.displayOrder ?? 0),
+          available: Boolean(item.available),
+          createdAt: item.created_at ?? item.createdAt ?? new Date().toISOString(),
+          updatedAt: item.updated_at ?? item.updatedAt ?? new Date().toISOString(),
+        }));
+      }
+    } catch (err) {
+      console.warn('Supabase fetch error, falling back to default menu items:', err);
+    }
+  }
+
+  return DEFAULT_MENU_ITEMS;
 }

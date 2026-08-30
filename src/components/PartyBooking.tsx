@@ -19,16 +19,18 @@ import {
   Music,
   ArrowRight,
   Ticket,
+  Utensils,
 } from 'lucide-react';
 import type { PartyPackageModel } from '../types/database.ts';
 import { fetchActivePartyPackages } from '../lib/supabase.ts';
 
 interface PartyBookingProps {
   onNavigateToTickets?: () => void;
+  onNavigateToMenu?: () => void;
   onNavigateToDocs?: () => void;
 }
 
-export default function PartyBooking({ onNavigateToTickets, onNavigateToDocs }: PartyBookingProps) {
+export default function PartyBooking({ onNavigateToTickets, onNavigateToMenu, onNavigateToDocs }: PartyBookingProps) {
   const [packages, setPackages] = useState<PartyPackageModel[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<PartyPackageModel | null>(null);
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
@@ -185,14 +187,24 @@ export default function PartyBooking({ onNavigateToTickets, onNavigateToDocs }: 
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {onNavigateToTickets && (
               <button
                 onClick={onNavigateToTickets}
                 className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
               >
                 <Ticket className="w-3.5 h-3.5 text-red-500" />
-                <span>Ingressos Diários</span>
+                <span>Ingressos</span>
+              </button>
+            )}
+
+            {onNavigateToMenu && (
+              <button
+                onClick={onNavigateToMenu}
+                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
+              >
+                <Utensils className="w-3.5 h-3.5 text-red-500" />
+                <span>Cardápio</span>
               </button>
             )}
 

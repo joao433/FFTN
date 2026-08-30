@@ -14,16 +14,18 @@ import {
   Clock,
   Flame,
   ArrowRight,
+  Utensils,
 } from 'lucide-react';
 import type { TicketPackageModel } from '../types/database.ts';
 import { fetchActiveTicketPackages } from '../lib/supabase.ts';
 
 interface TicketPurchaseProps {
   onNavigateToParties?: () => void;
+  onNavigateToMenu?: () => void;
   onNavigateToDocs?: () => void;
 }
 
-export default function TicketPurchase({ onNavigateToParties, onNavigateToDocs }: TicketPurchaseProps) {
+export default function TicketPurchase({ onNavigateToParties, onNavigateToMenu, onNavigateToDocs }: TicketPurchaseProps) {
   const [packages, setPackages] = useState<TicketPackageModel[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<TicketPackageModel | null>(null);
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
@@ -182,10 +184,20 @@ export default function TicketPurchase({ onNavigateToParties, onNavigateToDocs }
             {onNavigateToParties && (
               <button
                 onClick={onNavigateToParties}
-                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/30 font-bold uppercase tracking-wider transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
               >
                 <Sparkles className="w-3.5 h-3.5 text-red-500" />
-                <span>Festas & Eventos</span>
+                <span>Festas</span>
+              </button>
+            )}
+
+            {onNavigateToMenu && (
+              <button
+                onClick={onNavigateToMenu}
+                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
+              >
+                <Utensils className="w-3.5 h-3.5 text-red-500" />
+                <span>Cardápio</span>
               </button>
             )}
 

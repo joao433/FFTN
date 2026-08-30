@@ -7,13 +7,18 @@ interface SuccessViewProps {
 
 export default function SuccessView({ onNavigateHome }: SuccessViewProps) {
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [orderType, setOrderType] = useState<string>('ticket');
 
   useEffect(() => {
-    // Check if session_id is in query params
+    // Check if session_id and type are in query params
     const params = new URLSearchParams(window.location.search);
     const sid = params.get('session_id');
+    const type = params.get('type') || 'ticket';
     if (sid) {
       setSessionId(sid);
+    }
+    if (type) {
+      setOrderType(type);
     }
   }, []);
 
@@ -53,18 +58,26 @@ export default function SuccessView({ onNavigateHome }: SuccessViewProps) {
               Diversão Garantida
             </div>
             <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white">
-              Pagamento Confirmado!
+              {orderType === 'party'
+                ? 'Festa Agendada com Sucesso!'
+                : orderType === 'menu'
+                ? 'Pedido do Cardápio Confirmado!'
+                : 'Pagamento Confirmado!'}
             </h1>
             <p className="text-neutral-300 mt-2 text-sm sm:text-base leading-relaxed">
-              Seu ingresso foi registrado com sucesso em nosso sistema.
+              {orderType === 'party'
+                ? 'Sua reserva de festa foi registrada e confirmada com sucesso.'
+                : orderType === 'menu'
+                ? 'Seu pedido de lanches/bebidas foi recebido e já está em preparação.'
+                : 'Seu ingresso foi registrado com sucesso em nosso sistema.'}
             </p>
           </div>
 
-          {/* Ticket voucher card */}
+          {/* Ticket/Order voucher card */}
           <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-5 mb-8 relative">
             <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
               <span className="px-2.5 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-wider rounded-md shadow-md">
-                Ingresso Válido
+                {orderType === 'party' ? 'Reserva Ativa' : orderType === 'menu' ? 'Pedido Pago' : 'Ingresso Válido'}
               </span>
             </div>
 
@@ -74,10 +87,16 @@ export default function SuccessView({ onNavigateHome }: SuccessViewProps) {
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  Check-in na Catraca do Parque
+                  {orderType === 'party'
+                    ? 'Check-in com a Equipe de Eventos'
+                    : orderType === 'menu'
+                    ? 'Retirada no Balcão de Alimentação'
+                    : 'Check-in na Catraca do Parque'}
                 </h3>
                 <p className="text-xs text-neutral-400 mt-1">
-                  Ao chegar no parque, basta informar o seu <strong className="text-neutral-200">E-mail</strong> ou <strong className="text-neutral-200">Telefone cadastrado</strong> na entrada principal para liberação imediata.
+                  {orderType === 'menu'
+                    ? 'Apresente seu nome e e-mail no balcão central de alimentação do parque para retirar seus itens quentes e bebidas.'
+                    : 'Ao chegar no parque, basta informar o seu E-mail ou Telefone cadastrado na entrada principal para liberação imediata.'}
                 </p>
               </div>
             </div>

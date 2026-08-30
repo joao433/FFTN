@@ -4,6 +4,7 @@
 
 export type TicketStatus = 'pending' | 'paid' | 'used' | 'canceled';
 export type PartyBookingStatus = 'pending' | 'paid' | 'confirmed' | 'canceled';
+export type MenuOrderStatus = 'pending' | 'paid' | 'preparing' | 'ready' | 'delivered' | 'canceled';
 export type AdminRole = 'admin' | 'staff';
 
 export interface TicketPackageModel {
@@ -90,6 +91,31 @@ export interface MenuItemModel {
   updatedAt: Date | string;
 }
 
+export interface MenuOrderModel {
+  id: string;
+  holderName: string;
+  holderEmail: string;
+  holderPhone: string;
+  totalPriceCents: number;
+  status: MenuOrderStatus;
+  stripeCheckoutSessionId?: string | null;
+  stripePaymentIntentId?: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  items?: MenuOrderItemModel[];
+}
+
+export interface MenuOrderItemModel {
+  id: string;
+  orderId: string;
+  menuItemId: string;
+  itemName: string;
+  unitPriceCents: number;
+  quantity: number;
+  totalPriceCents: number;
+  createdAt: Date | string;
+}
+
 export interface AdminUserModel {
   id: string;
   email: string;
@@ -113,12 +139,14 @@ export interface StripeWebhookEventModel {
  * Stripe Checkout Metadata contract for webhook routing
  */
 export interface StripeCheckoutMetadata {
-  orderType: 'ticket' | 'party';
-  packageId: string;
-  holderName: string;
-  holderEmail: string;
-  holderPhone: string;
-  eventDate: string;
+  type: 'ticket' | 'party' | 'menu';
+  orderType?: 'ticket' | 'party' | 'menu';
+  packageId?: string;
+  orderId?: string;
+  holderName?: string;
+  holderEmail?: string;
+  holderPhone?: string;
+  eventDate?: string;
   eventTime?: string;
   guestCount?: string;
 }

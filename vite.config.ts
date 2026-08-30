@@ -10,7 +10,8 @@ function netlifyFunctionsPlugin(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         if (
           req.url?.startsWith('/.netlify/functions/create-checkout-session') ||
-          req.url?.startsWith('/.netlify/functions/create-party-checkout-session')
+          req.url?.startsWith('/.netlify/functions/create-party-checkout-session') ||
+          req.url?.startsWith('/.netlify/functions/create-menu-checkout-session')
         ) {
           if (req.method !== 'POST') {
             res.statusCode = 405;
@@ -25,12 +26,21 @@ function netlifyFunctionsPlugin(): Plugin {
           });
 
           const isParty = req.url.startsWith('/.netlify/functions/create-party-checkout-session');
+          const isMenu = req.url.startsWith('/.netlify/functions/create-menu-checkout-session');
 
           req.on('end', async () => {
             try {
-              const { handler } = isParty
-                ? await import('./netlify/functions/create-party-checkout-session.js')
-                : await import('./netlify/functions/create-checkout-session.js');
+              let handler;
+              if (isParty) {
+                const mod = await import('./netlify/functions/create-party-checkout-session.js');
+                handler = mod.handler;
+              } else if (isMenu) {
+                const mod = await import('./netlify/functions/create-menu-checkout-session.js');
+                handler = mod.handler;
+              } else {
+                const mod = await import('./netlify/functions/create-checkout-session.js');
+                handler = mod.handler;
+              }
               const event = {
                 httpMethod: 'POST',
                 headers: req.headers,

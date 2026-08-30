@@ -176,6 +176,33 @@ export const handler = async (event) => {
       }
 
       console.log('[Stripe Webhook] Party booking updated successfully:', updatedBooking);
+    } else if (orderType === 'menu') {
+      const orderId = metadata.order_id;
+      console.log(`[Stripe Webhook] Updating menu order for session: ${sessionId}, order_id: ${orderId}`);
+
+      const updatePayload = {
+        status: 'paid',
+        updated_at: new Date().toISOString(),
+      };
+      if (paymentIntentId) {
+        updatePayload.stripe_payment_intent_id = paymentIntentId;
+      }
+
+      let query = supabase.from('menu_orders').update(updatePayload);
+      if (orderId) {
+        query = query.eq('id', orderId);
+      } else {
+        query = query.eq('stripe_checkout_session_id', sessionId);
+      }
+
+      const { data: updatedOrder, error: menuOrderError } = await query.select();
+
+      if (menuOrderError) {
+        console.error('[Stripe Webhook] Error updating menu order status:', menuOrderError);
+        throw menuOrderError;
+      }
+
+      console.log('[Stripe Webhook] Menu order updated successfully:', updatedOrder);
     } else {
       console.warn(`[Stripe Webhook] Unrecognized or missing metadata.type: "${orderType}" on session ${sessionId}`);
     }

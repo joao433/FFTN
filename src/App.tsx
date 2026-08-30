@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import TicketPurchase from './components/TicketPurchase.tsx';
 import PartyBooking from './components/PartyBooking.tsx';
+import MenuPage from './components/MenuPage.tsx';
 import SuccessView from './components/SuccessView.tsx';
 import CancelView from './components/CancelView.tsx';
 
-type AppRoute = 'tickets' | 'festas' | 'sucesso' | 'cancelado';
+type AppRoute = 'tickets' | 'festas' | 'cardapio' | 'sucesso' | 'cancelado';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>('tickets');
@@ -21,6 +22,8 @@ export default function App() {
         setCurrentRoute('cancelado');
       } else if (pathname.includes('/festas') || search.includes('page=festas')) {
         setCurrentRoute('festas');
+      } else if (pathname.includes('/cardapio') || search.includes('page=cardapio')) {
+        setCurrentRoute('cardapio');
       } else {
         setCurrentRoute('tickets');
       }
@@ -35,6 +38,7 @@ export default function App() {
     setCurrentRoute(route);
     let newPath = '/';
     if (route === 'festas') newPath = '/festas';
+    if (route === 'cardapio') newPath = '/cardapio';
     if (route === 'sucesso') newPath = '/sucesso';
     if (route === 'cancelado') newPath = '/cancelado';
 
@@ -49,11 +53,24 @@ export default function App() {
     <div className="w-full min-h-screen bg-black">
       {/* Route Views */}
       {currentRoute === 'tickets' && (
-        <TicketPurchase onNavigateToParties={() => navigateTo('festas')} />
+        <TicketPurchase
+          onNavigateToParties={() => navigateTo('festas')}
+          onNavigateToMenu={() => navigateTo('cardapio')}
+        />
       )}
 
       {currentRoute === 'festas' && (
-        <PartyBooking onNavigateToTickets={() => navigateTo('tickets')} />
+        <PartyBooking
+          onNavigateToTickets={() => navigateTo('tickets')}
+          onNavigateToMenu={() => navigateTo('cardapio')}
+        />
+      )}
+
+      {currentRoute === 'cardapio' && (
+        <MenuPage
+          onNavigateToTickets={() => navigateTo('tickets')}
+          onNavigateToParties={() => navigateTo('festas')}
+        />
       )}
 
       {currentRoute === 'sucesso' && (
