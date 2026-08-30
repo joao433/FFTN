@@ -4,6 +4,8 @@ import {
   Package,
   PartyPopper,
   UtensilsCrossed,
+  CalendarDays,
+  ShoppingBag,
   LogOut,
   ExternalLink,
   ShieldCheck,
@@ -11,14 +13,22 @@ import {
 import AdminTicketsTab from './admin/AdminTicketsTab';
 import AdminTicketPackagesTab from './admin/AdminTicketPackagesTab';
 import AdminPartyPackagesTab from './admin/AdminPartyPackagesTab';
+import AdminPartyBookingsTab from './admin/AdminPartyBookingsTab';
 import AdminMenuTab from './admin/AdminMenuTab';
+import AdminMenuOrdersTab from './admin/AdminMenuOrdersTab';
 
 interface AdminDashboardProps {
   onLogout: () => void;
   onNavigateHome?: () => void;
 }
 
-type AdminTab = 'tickets' | 'ticket_packages' | 'party_packages' | 'menu';
+type AdminTab =
+  | 'tickets'
+  | 'party_bookings'
+  | 'menu_orders'
+  | 'ticket_packages'
+  | 'party_packages'
+  | 'menu';
 
 export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('tickets');
@@ -53,7 +63,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
                     Gerenciamento
                   </span>
                 </div>
-                <p className="text-[11px] text-neutral-400">Ingressos, Festas e Cardápio</p>
+                <p className="text-[11px] text-neutral-400">Ingressos, Festas, Pedidos e Cardápio</p>
               </div>
             </div>
 
@@ -75,7 +85,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
             <button
               id="admin-tab-tickets"
               onClick={() => setActiveTab('tickets')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'tickets'
                   ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
@@ -85,13 +95,41 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               <span>Ingressos</span>
             </button>
 
+            {/* Tab: Reservas de Festa */}
+            <button
+              id="admin-tab-party-bookings"
+              onClick={() => setActiveTab('party_bookings')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'party_bookings'
+                  ? 'bg-amber-500 text-neutral-950 shadow-md shadow-amber-950/50'
+                  : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
+              }`}
+            >
+              <CalendarDays className="w-3.5 h-3.5" />
+              <span>Reservas de Festa</span>
+            </button>
+
+            {/* Tab: Pedidos do Cardápio */}
+            <button
+              id="admin-tab-menu-orders"
+              onClick={() => setActiveTab('menu_orders')}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                activeTab === 'menu_orders'
+                  ? 'bg-orange-600 text-white shadow-md shadow-orange-950/50'
+                  : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              <span>Pedidos do Cardápio</span>
+            </button>
+
             {/* Tab: Pacotes de Ingresso */}
             <button
               id="admin-tab-ticket-packages"
               onClick={() => setActiveTab('ticket_packages')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'ticket_packages'
-                  ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
+                  ? 'bg-neutral-700 text-white shadow-md shadow-neutral-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -103,9 +141,9 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
             <button
               id="admin-tab-party-packages"
               onClick={() => setActiveTab('party_packages')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'party_packages'
-                  ? 'bg-amber-500 text-neutral-950 shadow-md shadow-amber-950/50'
+                  ? 'bg-neutral-700 text-white shadow-md shadow-neutral-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -117,9 +155,9 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
             <button
               id="admin-tab-menu"
               onClick={() => setActiveTab('menu')}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'menu'
-                  ? 'bg-orange-600 text-white shadow-md shadow-orange-950/50'
+                  ? 'bg-neutral-700 text-white shadow-md shadow-neutral-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -156,6 +194,14 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
       <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
         {activeTab === 'tickets' && (
           <AdminTicketsTab onSessionExpired={handleSessionExpired} />
+        )}
+
+        {activeTab === 'party_bookings' && (
+          <AdminPartyBookingsTab onSessionExpired={handleSessionExpired} />
+        )}
+
+        {activeTab === 'menu_orders' && (
+          <AdminMenuOrdersTab onSessionExpired={handleSessionExpired} />
         )}
 
         {activeTab === 'ticket_packages' && (
