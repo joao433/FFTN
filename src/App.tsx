@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import TicketPurchase from './components/TicketPurchase.tsx';
 import PartyBooking from './components/PartyBooking.tsx';
 import MenuPage from './components/MenuPage.tsx';
+import AdminLogin from './components/AdminLogin.tsx';
+import AdminDashboard from './components/AdminDashboard.tsx';
 import SuccessView from './components/SuccessView.tsx';
 import CancelView from './components/CancelView.tsx';
 
-type AppRoute = 'tickets' | 'festas' | 'cardapio' | 'sucesso' | 'cancelado';
+type AppRoute = 'tickets' | 'festas' | 'cardapio' | 'admin' | 'admin-dashboard' | 'sucesso' | 'cancelado';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState<AppRoute>('tickets');
@@ -20,6 +22,10 @@ export default function App() {
         setCurrentRoute('sucesso');
       } else if (pathname.includes('/cancelado') || search.includes('page=cancelado')) {
         setCurrentRoute('cancelado');
+      } else if (pathname.includes('/admin/dashboard') || search.includes('page=admin-dashboard') || search.includes('page=admin/dashboard')) {
+        setCurrentRoute('admin-dashboard');
+      } else if (pathname.includes('/admin') || search.includes('page=admin')) {
+        setCurrentRoute('admin');
       } else if (pathname.includes('/festas') || search.includes('page=festas')) {
         setCurrentRoute('festas');
       } else if (pathname.includes('/cardapio') || search.includes('page=cardapio')) {
@@ -39,6 +45,8 @@ export default function App() {
     let newPath = '/';
     if (route === 'festas') newPath = '/festas';
     if (route === 'cardapio') newPath = '/cardapio';
+    if (route === 'admin') newPath = '/admin';
+    if (route === 'admin-dashboard') newPath = '/admin/dashboard';
     if (route === 'sucesso') newPath = '/sucesso';
     if (route === 'cancelado') newPath = '/cancelado';
 
@@ -70,6 +78,20 @@ export default function App() {
         <MenuPage
           onNavigateToTickets={() => navigateTo('tickets')}
           onNavigateToParties={() => navigateTo('festas')}
+        />
+      )}
+
+      {currentRoute === 'admin' && (
+        <AdminLogin
+          onLoginSuccess={() => navigateTo('admin-dashboard')}
+          onNavigateHome={() => navigateTo('tickets')}
+        />
+      )}
+
+      {currentRoute === 'admin-dashboard' && (
+        <AdminDashboard
+          onLogout={() => navigateTo('admin')}
+          onNavigateHome={() => navigateTo('tickets')}
         />
       )}
 
