@@ -8,45 +8,39 @@ function netlifyFunctionsPlugin(): Plugin {
     name: 'netlify-functions-dev-middleware',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (
-          req.url?.startsWith('/.netlify/functions/create-checkout-session') ||
-          req.url?.startsWith('/.netlify/functions/create-party-checkout-session') ||
-          req.url?.startsWith('/.netlify/functions/create-menu-checkout-session')
-        ) {
-          if (req.method !== 'POST') {
-            res.statusCode = 405;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: 'Method Not Allowed' }));
-            return;
-          }
+        if (req.url?.startsWith('/.netlify/functions/')) {
+          const urlObj = new URL(req.url, 'http://localhost:3000');
+          const funcName = urlObj.pathname.replace('/.netlify/functions/', '').split('/')[0];
 
           let body = '';
           req.on('data', (chunk) => {
             body += chunk;
           });
 
-          const isParty = req.url.startsWith('/.netlify/functions/create-party-checkout-session');
-          const isMenu = req.url.startsWith('/.netlify/functions/create-menu-checkout-session');
-
           req.on('end', async () => {
             try {
-              let handler;
-              if (isParty) {
-                const mod = await import('./netlify/functions/create-party-checkout-session.js');
-                handler = mod.handler;
-              } else if (isMenu) {
-                const mod = await import('./netlify/functions/create-menu-checkout-session.js');
-                handler = mod.handler;
-              } else {
-                const mod = await import('./netlify/functions/create-checkout-session.js');
-                handler = mod.handler;
+              const mod = await import(`./netlify/functions/${funcName}.js`);
+              const handler = mod.handler;
+              if (!handler) {
+                res.statusCode = 404;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: `Função ${funcName} não encontrada.` }));
+                return;
               }
+
+              const queryStringParameters: Record<string, string> = {};
+              urlObj.searchParams.forEach((val, key) => {
+                queryStringParameters[key] = val;
+              });
+
               const event = {
-                httpMethod: 'POST',
+                httpMethod: req.method || 'GET',
                 headers: req.headers,
+                queryStringParameters,
                 body,
                 isBase64Encoded: false,
               };
+
               const result = await handler(event as any);
               res.statusCode = result.statusCode || 200;
               if (result.headers) {
@@ -56,14 +50,12 @@ function netlifyFunctionsPlugin(): Plugin {
               }
               res.end(result.body);
             } catch (err: any) {
-              console.error('[Vite Netlify Functions Dev Error]:', err);
+              console.error(`[Vite Netlify Functions Dev Error - ${funcName}]:`, err);
               res.statusCode = 500;
               res.setHeader('Content-Type', 'application/json');
               res.end(
                 JSON.stringify({
-                  error:
-                    err?.message ||
-                    'Erro ao criar sessão de checkout. Verifique as credenciais da Stripe e Supabase.',
+                  error: err?.message || 'Erro interno ao processar a função.',
                 })
               );
             }
