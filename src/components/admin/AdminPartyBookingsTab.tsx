@@ -235,9 +235,9 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="text-neutral-500 hover:text-white text-xs absolute right-3 top-3 transition-colors cursor-pointer"
+              className="text-neutral-500 hover:text-white absolute right-3 top-3 transition-colors cursor-pointer"
             >
-              ✕
+              <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>

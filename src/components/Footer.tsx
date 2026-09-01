@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Ticket, Sparkles, Utensils, ShieldCheck, MapPin, Phone, Mail, Clock, Heart } from 'lucide-react';
+import { Ticket, Sparkles, Utensils, MapPin, Phone, Mail, ShieldCheck } from 'lucide-react';
 
 interface FooterProps {
   onNavigateToHome?: () => void;
@@ -15,58 +15,47 @@ export default function Footer({
   onNavigateToMenu,
 }: FooterProps) {
   return (
-    <footer className="relative z-10 border-t border-neutral-900 bg-[#040406] text-neutral-400 text-sm mt-16">
+    <footer className="relative z-10 border-t border-white/[0.08] bg-[#07080b] text-neutral-400 text-xs">
       {/* Upper Footer Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
-          {/* Column 1: Brand & Identity */}
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12">
+          {/* Brand & Identity */}
+          <div className="md:col-span-5 space-y-4">
             <div 
               onClick={onNavigateToHome}
-              className="flex items-center gap-3 cursor-pointer group inline-flex"
+              className="cursor-pointer group inline-flex items-center gap-2.5"
             >
-              <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-950/60 border border-red-400/30 group-hover:scale-105 transition-transform flex-shrink-0">
-                <Flame className="w-5 h-5 fill-white" />
+              <div className="h-6 w-6 rounded-md bg-[#89CFF0] flex items-center justify-center text-black font-black text-xs">
+                <Ticket className="w-3.5 h-3.5 text-black stroke-[2.5]" />
               </div>
-              <div>
-                <span className="font-black text-lg tracking-tight uppercase text-white block group-hover:text-red-400 transition-colors">
-                  Parque Aventura
-                </span>
-                <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-extrabold">
-                  Fun Is Our Middle Name
-                </p>
-              </div>
+              <span className="font-extrabold text-base tracking-tight text-white group-hover:text-[#89CFF0] transition-colors">
+                Family Fun Town
+              </span>
             </div>
             
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              O destino definitivo para quem busca adrenalina, momentos inesquecíveis em família e as atrações mais radicais da região.
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
+              O maior complexo de diversões, atrações radicais, área kids e gastronomia para toda a família. Vouchers digitais instantâneos e checkout 100% seguro.
             </p>
 
-            <div className="flex items-center gap-2 pt-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-[11px] text-neutral-300 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Stripe Verified
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-900 border border-neutral-800 text-[11px] text-neutral-300 font-medium">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
-                10h às 22h
-              </span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-semibold text-neutral-300">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#89CFF0]" />
+              <span>PAGAMENTO SEGURO VIA STRIPE</span>
             </div>
           </div>
 
           {/* Column 2: Quick Links */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-white">
-              Navegação Rápida
+          <div className="md:col-span-3 space-y-3">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-neutral-300">
+              Navegação
             </h4>
             <ul className="space-y-2 text-xs">
               {onNavigateToHome && (
                 <li>
                   <button
                     onClick={onNavigateToHome}
-                    className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
                   >
-                    <span>Início (Home)</span>
+                    Início
                   </button>
                 </li>
               )}
@@ -74,10 +63,9 @@ export default function Footer({
                 <li>
                   <button
                     onClick={onNavigateToTickets}
-                    className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
                   >
-                    <Ticket className="w-3.5 h-3.5 text-red-500" />
-                    <span>Ingressos & Passes VIP</span>
+                    Ingressos & Passaportes
                   </button>
                 </li>
               )}
@@ -85,10 +73,9 @@ export default function Footer({
                 <li>
                   <button
                     onClick={onNavigateToParties}
-                    className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Festas & Aniversários</span>
+                    Festas & Aniversários
                   </button>
                 </li>
               )}
@@ -96,61 +83,34 @@ export default function Footer({
                 <li>
                   <button
                     onClick={onNavigateToMenu}
-                    className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
                   >
-                    <Utensils className="w-3.5 h-3.5 text-orange-400" />
-                    <span>Cardápio & Lanches</span>
+                    Cardápio & Praça
                   </button>
                 </li>
               )}
             </ul>
           </div>
 
-          {/* Column 3: Horários & Visitação */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-white">
-              Horários do Parque
-            </h4>
-            {/* <!-- TEXTOS PROVISÓRIOS / PLACEHOLDER - AJUSTE CONFORME OS HORÁRIOS REAIS --> */}
-            <div className="space-y-2 text-xs text-neutral-400">
-              <div className="flex items-start justify-between border-b border-neutral-900 pb-1.5">
-                <span>Segunda a Sexta:</span>
-                <span className="font-semibold text-neutral-200">11h às 21h</span>
-              </div>
-              <div className="flex items-start justify-between border-b border-neutral-900 pb-1.5">
-                <span>Sábados e Domingos:</span>
-                <span className="font-semibold text-neutral-200">10h às 22h</span>
-              </div>
-              <div className="flex items-start justify-between">
-                <span>Feriados Nacionais:</span>
-                <span className="font-semibold text-neutral-200">10h às 23h</span>
-              </div>
-              <p className="text-[11px] text-neutral-400 pt-1">
-                * Bilheteria encerra 1 hora antes do fechamento das atrações.
-              </p>
-            </div>
-          </div>
-
-          {/* Column 4: Contato & Localização */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-black uppercase tracking-wider text-white">
+          {/* Column 3: Contato & Localização */}
+          <div className="md:col-span-4 space-y-3">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-neutral-300">
               Atendimento & Localização
             </h4>
-            {/* <!-- DADOS DE CONTATO PROVISÓRIOS / PLACEHOLDER - SUBSTITUA PELOS REAIS --> */}
-            <ul className="space-y-2.5 text-xs text-neutral-400">
+            <ul className="space-y-2 text-xs text-neutral-400">
               <li className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <MapPin className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0 mt-0.5" />
                 <span>
-                  Av. das Atrações, 1500 — Complexo de Lazer e Entretenimento
+                  Av. das Atrações, 1500 — Complexo de Lazer
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-red-500 flex-shrink-0" />
+                <Phone className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
                 <span>(11) 98765-4321 / (11) 4004-1234</span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-red-500 flex-shrink-0" />
-                <span>contato@parqueaventura.com</span>
+                <Mail className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
+                <span>contato@familyfuntown.com</span>
               </li>
             </ul>
           </div>
@@ -158,16 +118,14 @@ export default function Footer({
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-neutral-900/90 bg-black/60 py-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-400">
-          <div className="flex items-center gap-2">
-            <span>© 2026 Parque Aventura. Todos os direitos reservados.</span>
+      <div className="border-t border-white/[0.06] bg-black/40 py-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-neutral-500">
+          <div>
+            © 2026 Family Fun Town. Todos os direitos reservados.
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-neutral-400">
-            <span>Criado com</span>
-            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-            <span>para proporcionar a melhor experiência de diversão.</span>
+          <div className="flex items-center gap-1 text-neutral-400 font-medium">
+            <span>Seu Jogo. Seu Momento. Sua Diversão.</span>
           </div>
         </div>
       </div>

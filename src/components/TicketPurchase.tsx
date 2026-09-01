@@ -153,75 +153,52 @@ export default function TicketPurchase({
   };
 
   return (
-    <div className="min-h-screen bg-[#050507] text-neutral-100 font-sans selection:bg-red-600 selection:text-white pb-24 relative">
+    <div className="min-h-screen bg-[#07080b] text-neutral-100 font-sans selection:bg-[#89CFF0] selection:text-black pb-24 relative">
       {/* Dynamic Background Atmospheric Lighting */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-red-600/20 via-red-950/10 to-transparent blur-[160px] rounded-full" />
-        <div className="absolute top-1/2 -right-48 w-[600px] h-[600px] bg-red-900/10 blur-[180px] rounded-full" />
-        <div className="absolute bottom-10 -left-48 w-[500px] h-[500px] bg-red-950/15 blur-[160px] rounded-full" />
-        {/* Subtle grid texture overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]" 
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)`,
-            backgroundSize: '32px 32px'
-          }} 
-        />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-[#89CFF0]/[0.03] blur-[150px] rounded-full" />
+        <div className="absolute top-1/2 -right-48 w-[600px] h-[600px] bg-neutral-800/10 blur-[180px] rounded-full" />
+        <div className="absolute bottom-10 -left-48 w-[500px] h-[500px] bg-neutral-900/30 blur-[160px] rounded-full" />
       </div>
 
       {/* Top Brand Bar */}
-      <header className="relative z-20 border-b border-neutral-900/80 bg-[#050507]/85 backdrop-blur-xl sticky top-0 transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 flex items-center justify-between">
+      <header className="relative z-20 border-b border-white/[0.06] bg-[#07080b]/90 backdrop-blur-xl sticky top-0 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           <div 
             onClick={onNavigateToHome}
-            className={`flex items-center gap-3.5 ${onNavigateToHome ? 'cursor-pointer group' : ''}`}
+            className={`flex items-center gap-3 ${onNavigateToHome ? 'cursor-pointer group' : ''}`}
           >
-            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-gradient-to-br from-red-500 to-red-700 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-950/60 border border-red-400/30 flex-shrink-0 group-hover:scale-105 transition-transform">
-              <Flame className="w-5 h-5 fill-white drop-shadow-md" />
+            <div className="h-7 w-7 rounded-lg bg-[#89CFF0] flex items-center justify-center text-black font-black text-xs shadow-sm shadow-[#89CFF0]/20">
+              <Ticket className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-lg sm:text-xl tracking-tight uppercase text-white group-hover:text-red-400 transition-colors">
-                  Parque Aventura
-                </span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-black uppercase tracking-wider">
-                  Tickets Online
-                </span>
-              </div>
-              <p className="text-[11px] text-neutral-400 uppercase tracking-widest font-extrabold">
-                Fun Is Our Middle Name
-              </p>
-            </div>
+            <span className="font-extrabold text-base tracking-tight text-white group-hover:text-[#89CFF0] transition-colors">
+              Family Fun Town
+            </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden lg:flex items-center gap-2 text-xs font-medium text-neutral-400 bg-neutral-900/80 px-3.5 py-2 rounded-xl border border-neutral-800/80 backdrop-blur-sm">
-              <Clock className="w-3.5 h-3.5 text-red-500" />
-              <span>Aberto hoje: <strong className="text-neutral-200">10h às 22h</strong></span>
-            </div>
-
             {onNavigateToHome && (
               <button
                 onClick={onNavigateToHome}
-                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-neutral-800 hover:border-neutral-700 font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/[0.08] font-semibold transition-all cursor-pointer"
               >
                 <span>Início</span>
               </button>
             )}
 
             <button
-              className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-xl bg-red-600/20 text-red-400 border border-red-500/40 font-black uppercase tracking-wider shadow-sm"
+              className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-full bg-[#89CFF0] text-black font-bold tracking-tight shadow-sm shadow-[#89CFF0]/20"
             >
-              <Ticket className="w-3.5 h-3.5 text-red-500" />
+              <Ticket className="w-3.5 h-3.5 text-black stroke-[2.5]" />
               <span>Ingressos</span>
             </button>
 
             {onNavigateToParties && (
               <button
                 onClick={onNavigateToParties}
-                className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-neutral-800 hover:border-neutral-700 font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/[0.08] font-medium transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-red-500" />
+                <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
                 <span>Festas</span>
               </button>
             )}
@@ -229,56 +206,43 @@ export default function TicketPurchase({
             {onNavigateToMenu && (
               <button
                 onClick={onNavigateToMenu}
-                className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 text-neutral-200 hover:text-white border border-neutral-800 hover:border-neutral-700 font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/[0.08] font-medium transition-all cursor-pointer"
               >
-                <Utensils className="w-3.5 h-3.5 text-red-500" />
+                <Utensils className="w-3.5 h-3.5 text-neutral-400" />
                 <span>Cardápio</span>
-              </button>
-            )}
-
-            {onNavigateToDocs && (
-              <button
-                onClick={onNavigateToDocs}
-                className="text-xs px-3 py-2 rounded-xl bg-neutral-900/60 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-800/60 font-medium transition-colors"
-              >
-                Docs
               </button>
             )}
           </div>
         </div>
       </header>
 
-      {/* Hero Section: Cinematic, Bold, High Contrast */}
+      {/* Hero Section */}
       <section className="relative z-10 pt-12 sm:pt-16 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest mb-6 shadow-lg shadow-red-950/20 backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-red-400" />
-          Ingressos Oficiais & Passes VIP
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-neutral-400 tracking-wider uppercase mb-4">
+          <span className="text-[#89CFF0]">#</span> INGRESSOS OFICIAIS & PASSAPORTES
         </div>
 
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tighter text-white leading-[0.95] drop-shadow-2xl">
-          FUN IS OUR{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-red-400 to-orange-500 underline decoration-red-500/40 decoration-wavy underline-offset-8">
-            MIDDLE NAME
-          </span>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-[1.05]">
+          Garanta Sua Entrada no <span className="text-[#89CFF0]">Parque</span>
         </h1>
 
-        <p className="mt-5 sm:mt-6 text-neutral-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed font-normal">
-          Garanta seu passe antecipado com desconto exclusivo, evite filas na bilheteria e aproveite um dia inesquecível de adrenalina e diversão.
+        <p className="mt-4 sm:mt-5 text-neutral-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+          Compre seu ingresso antecipado com desconto exclusivo, receba o voucher digital com QR Code no celular e entre direto nas atrações sem filas.
         </p>
 
         {/* Park Highlights Strip */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs text-neutral-300">
-          <div className="px-3.5 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 flex items-center gap-1.5 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-neutral-200">Aberto Todos os Dias</span>
+          <div className="px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-[#89CFF0]" />
+            <span className="font-semibold text-neutral-200">10h às 22h Aberto</span>
           </div>
-          <div className="px-3.5 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 flex items-center gap-1.5 shadow-sm">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
-            <span className="font-semibold text-neutral-200">Entrada Sem Fila</span>
+          <div className="px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center gap-2">
+            <Zap className="w-3.5 h-3.5 text-[#89CFF0]" />
+            <span className="font-semibold text-neutral-200">Voucher Digital QR</span>
           </div>
-          <div className="px-3.5 py-1.5 rounded-full bg-neutral-900/80 border border-neutral-800 flex items-center gap-1.5 shadow-sm">
-            <ShieldCheck className="w-3.5 h-3.5 text-red-400" />
-            <span className="font-semibold text-neutral-200">Voucher Digital no Celular</span>
+          <div className="px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center gap-2">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#89CFF0]" />
+            <span className="font-semibold text-neutral-200">100% Checkout Stripe</span>
           </div>
         </div>
       </section>
@@ -288,21 +252,21 @@ export default function TicketPurchase({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           {/* Left Column: Ticket Packages (7 cols) */}
           <div className="lg:col-span-7 space-y-5">
-            <div className="flex items-center justify-between pb-2 border-b border-neutral-800/80">
-              <h2 className="text-sm font-black uppercase tracking-wider text-neutral-200 flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-red-600/10 text-red-500 border border-red-500/20">
-                  <Ticket className="w-4 h-4" />
-                </div>
-                1. Escolha seu Pacote de Ingresso
+            <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-200 flex items-center gap-2.5">
+                <span className="h-6 w-6 rounded-md bg-[#89CFF0]/10 text-[#89CFF0] border border-[#89CFF0]/20 flex items-center justify-center font-black text-[11px]">
+                  01
+                </span>
+                Escolha seu Pacote de Ingresso
               </h2>
-              <span className="text-xs text-neutral-400 font-mono px-2.5 py-1 rounded-lg bg-neutral-900 border border-neutral-800">
+              <span className="text-xs text-neutral-400 font-mono px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/[0.08]">
                 {packages.length} {packages.length === 1 ? 'opção' : 'opções'}
               </span>
             </div>
 
             {isLoadingPackages ? (
-              <div className="p-16 rounded-3xl bg-neutral-900/40 border border-neutral-800/80 text-center flex flex-col items-center justify-center gap-3.5 backdrop-blur-sm">
-                <Loader2 className="w-7 h-7 text-red-500 animate-spin" />
+              <div className="p-16 rounded-2xl bg-[#0f1015] border border-white/[0.06] text-center flex flex-col items-center justify-center gap-3.5">
+                <Loader2 className="w-7 h-7 text-[#89CFF0] animate-spin" />
                 <span className="text-xs text-neutral-400 uppercase tracking-widest font-bold">
                   Carregando pacotes do parque...
                 </span>
@@ -319,32 +283,27 @@ export default function TicketPurchase({
                         setSelectedPackage(pkg);
                         setValidationErrors((prev) => ({ ...prev, package: '' }));
                       }}
-                      className={`cursor-pointer rounded-2xl sm:rounded-3xl p-5 sm:p-6 transition-all duration-300 relative overflow-hidden border ${
+                      className={`cursor-pointer rounded-2xl p-5 sm:p-6 transition-all relative overflow-hidden border ${
                         isSelected
-                          ? 'bg-gradient-to-br from-red-950/40 via-neutral-900/90 to-neutral-950 border-red-500/80 ring-1 ring-red-500/40 shadow-2xl shadow-red-950/40 -translate-y-0.5'
-                          : 'bg-neutral-900/50 hover:bg-neutral-900/80 border-neutral-800/80 hover:border-neutral-700 hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5'
+                          ? 'bg-[#0f1015] border-[#89CFF0] ring-1 ring-[#89CFF0]/30 shadow-lg shadow-black/60'
+                          : 'bg-[#0f1015] hover:bg-[#14151c] border-white/[0.06] hover:border-white/15'
                       }`}
                     >
-                      {/* Ambient Accent Glow for Selected */}
-                      {isSelected && (
-                        <div className="absolute top-0 right-0 left-0 h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent" />
-                      )}
-
                       {isSelected && (
                         <div className="absolute top-0 right-0">
-                          <div className="bg-gradient-to-r from-red-600 to-red-500 text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-1.5 rounded-bl-2xl flex items-center gap-1.5 shadow-lg shadow-red-950/50">
+                          <div className="bg-[#89CFF0] text-black text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-bl-xl flex items-center gap-1">
                             <Check className="w-3 h-3 stroke-[3]" /> Selecionado
                           </div>
                         </div>
                       )}
 
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-                        <div className="space-y-2 pr-4 flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1.5 pr-4 flex-1">
                           <div className="flex items-center gap-2.5">
-                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${isSelected ? 'border-red-500 bg-red-500' : 'border-neutral-600'}`}>
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#89CFF0] bg-[#89CFF0]' : 'border-neutral-600'}`}>
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
                             </div>
-                            <h3 className="font-extrabold text-base sm:text-lg text-white uppercase tracking-tight">
+                            <h3 className="font-bold text-base sm:text-lg text-white tracking-tight">
                               {pkg.name}
                             </h3>
                           </div>
@@ -355,11 +314,11 @@ export default function TicketPurchase({
                           )}
                         </div>
 
-                        <div className="sm:text-right flex-shrink-0 flex sm:flex-col items-baseline sm:items-end justify-between border-t sm:border-t-0 border-neutral-800/80 pt-3.5 sm:pt-0 pl-5.5 sm:pl-0">
+                        <div className="sm:text-right flex-shrink-0 flex sm:flex-col items-baseline sm:items-end justify-between border-t sm:border-t-0 border-white/[0.06] pt-3 sm:pt-0 pl-5.5 sm:pl-0">
                           <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                             {formatUsdPrice(pkg.priceCents)}
                           </div>
-                          <span className="text-[10px] uppercase font-extrabold text-neutral-400 tracking-wider mt-0.5">
+                          <span className="text-[10px] uppercase font-bold text-neutral-500 tracking-wider">
                             USD / Por Pessoa
                           </span>
                         </div>
@@ -378,10 +337,10 @@ export default function TicketPurchase({
             )}
 
             {/* Quick Highlights / Park Perks */}
-            <div className="p-5 rounded-2xl bg-neutral-900/40 border border-neutral-800/80 grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs text-neutral-300 backdrop-blur-sm">
+            <div className="p-5 rounded-2xl bg-[#0f1015] border border-white/[0.06] grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs text-neutral-300">
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                  <Zap className="w-4 h-4 flex-shrink-0" />
+                <div className="p-1.5 rounded-lg bg-white/[0.05] border border-white/[0.08] text-neutral-300">
+                  <Zap className="w-4 h-4 flex-shrink-0 text-[#89CFF0]" />
                 </div>
                 <div>
                   <span className="font-bold text-neutral-200 block">Instantâneo</span>
@@ -390,8 +349,8 @@ export default function TicketPurchase({
               </div>
 
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                <div className="p-1.5 rounded-lg bg-white/[0.05] border border-white/[0.08] text-neutral-300">
+                  <ShieldCheck className="w-4 h-4 flex-shrink-0 text-[#89CFF0]" />
                 </div>
                 <div>
                   <span className="font-bold text-neutral-200 block">100% Seguro</span>
@@ -400,12 +359,12 @@ export default function TicketPurchase({
               </div>
 
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
-                  <Sparkles className="w-4 h-4 flex-shrink-0" />
+                <div className="p-1.5 rounded-lg bg-white/[0.05] border border-white/[0.08] text-neutral-300">
+                  <Sparkles className="w-4 h-4 flex-shrink-0 text-[#89CFF0]" />
                 </div>
                 <div>
                   <span className="font-bold text-neutral-200 block">Atrações VIP</span>
-                  <span className="text-[11px] text-neutral-400">Acesso a todos brinquedos</span>
+                  <span className="text-[11px] text-neutral-400">Acesso livre aos brinquedos</span>
                 </div>
               </div>
             </div>
@@ -413,24 +372,24 @@ export default function TicketPurchase({
 
           {/* Right Column: Checkout Form (5 cols) */}
           <div className="lg:col-span-5">
-            <div className="sticky top-24">
-              <div className="rounded-3xl bg-neutral-900/70 border border-neutral-800/90 p-6 sm:p-7 shadow-2xl shadow-black/80 backdrop-blur-xl relative overflow-hidden">
+            <div className="sticky top-20">
+              <div className="rounded-2xl bg-[#0f1015] border border-white/[0.08] p-6 sm:p-7 shadow-2xl relative overflow-hidden">
                 {/* Header */}
-                <div className="border-b border-neutral-800/80 pb-4 mb-5">
-                  <h2 className="text-sm font-black uppercase tracking-wider text-neutral-200 flex items-center gap-2.5">
-                    <div className="p-1.5 rounded-lg bg-red-600/10 text-red-500 border border-red-500/20">
-                      <User className="w-4 h-4" />
-                    </div>
-                    2. Dados do Titular e Visita
+                <div className="border-b border-white/[0.08] pb-4 mb-5">
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-200 flex items-center gap-2.5">
+                    <span className="h-6 w-6 rounded-md bg-[#89CFF0]/10 text-[#89CFF0] border border-[#89CFF0]/20 flex items-center justify-center font-black text-[11px]">
+                      02
+                    </span>
+                    Dados do Titular e Visita
                   </h2>
                   <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-                    Preencha os dados de quem irá apresentar o voucher oficial na entrada do parque.
+                    Preencha os dados de quem irá apresentar o voucher oficial na catraca do parque.
                   </p>
                 </div>
 
                 {/* Error Banner */}
                 {errorMessage && (
-                  <div className="mb-5 p-4 rounded-2xl bg-red-950/80 border border-red-800/80 text-red-200 text-xs flex items-start gap-3 shadow-lg shadow-red-950/40">
+                  <div className="mb-5 p-4 rounded-xl bg-red-950/80 border border-red-800/80 text-red-200 text-xs flex items-start gap-3">
                     <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <strong className="block font-bold text-red-300">Falha ao processar</strong>
@@ -442,16 +401,16 @@ export default function TicketPurchase({
                 <form onSubmit={handleCheckout} className="space-y-4">
                   {/* Selected Package Mini Summary */}
                   {selectedPackage && (
-                    <div className="p-3.5 rounded-2xl bg-neutral-950/90 border border-neutral-800 flex items-center justify-between text-xs">
+                    <div className="p-3.5 rounded-xl bg-black/40 border border-white/[0.08] flex items-center justify-between text-xs">
                       <div>
-                        <span className="text-[10px] text-neutral-400 uppercase font-extrabold tracking-wider block">
+                        <span className="text-[10px] text-neutral-400 uppercase font-bold tracking-wider block">
                           Pacote Selecionado
                         </span>
-                        <span className="font-black text-white uppercase text-xs sm:text-sm">
+                        <span className="font-bold text-white text-xs sm:text-sm">
                           {selectedPackage.name}
                         </span>
                       </div>
-                      <span className="text-base font-black text-red-400 font-mono">
+                      <span className="text-base font-black text-[#89CFF0]">
                         {formatUsdPrice(selectedPackage.priceCents)}
                       </span>
                     </div>
@@ -475,10 +434,10 @@ export default function TicketPurchase({
                           setHolderName(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, name: '' }));
                         }}
-                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-neutral-950/90 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.name
-                            ? 'border-red-500 focus:ring-red-500/20'
-                            : 'border-neutral-800/90 focus:border-red-500/80 focus:ring-red-500/20'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
                       <User className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
@@ -494,7 +453,7 @@ export default function TicketPurchase({
                       htmlFor="holder_email"
                       className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                     >
-                      E-mail para Recebimento *
+                      E-mail para Recebimento do Voucher *
                     </label>
                     <div className="relative">
                       <input
@@ -506,10 +465,10 @@ export default function TicketPurchase({
                           setHolderEmail(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, email: '' }));
                         }}
-                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-neutral-950/90 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.email
-                            ? 'border-red-500 focus:ring-red-500/20'
-                            : 'border-neutral-800/90 focus:border-red-500/80 focus:ring-red-500/20'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
                       <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
@@ -537,10 +496,10 @@ export default function TicketPurchase({
                           setHolderPhone(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, phone: '' }));
                         }}
-                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-neutral-950/90 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.phone
-                            ? 'border-red-500 focus:ring-red-500/20'
-                            : 'border-neutral-800/90 focus:border-red-500/80 focus:ring-red-500/20'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
                       <Phone className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
@@ -568,10 +527,10 @@ export default function TicketPurchase({
                           setEventDate(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, date: '' }));
                         }}
-                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-neutral-950/90 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-2 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.date
-                            ? 'border-red-500 focus:ring-red-500/20'
-                            : 'border-neutral-800/90 focus:border-red-500/80 focus:ring-red-500/20'
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
                       <Calendar className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
@@ -582,9 +541,9 @@ export default function TicketPurchase({
                   </div>
 
                   {/* Order Total Box */}
-                  <div className="pt-4 border-t border-neutral-800/90 flex items-center justify-between">
+                  <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] text-neutral-400 uppercase font-black block tracking-wider">
+                      <span className="text-[11px] text-neutral-400 uppercase font-bold block tracking-wider">
                         Total do Pedido
                       </span>
                       <span className="text-[11px] text-neutral-400">
@@ -601,24 +560,24 @@ export default function TicketPurchase({
                     id="buy-ticket-submit-btn"
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:to-red-500 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-black uppercase tracking-wider transition-all shadow-xl shadow-red-600/30 hover:shadow-red-600/50 flex items-center justify-center gap-2 group cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-full bg-[#89CFF0] hover:bg-[#70BAE0] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-black text-xs sm:text-sm font-bold tracking-tight transition-all shadow-md shadow-[#89CFF0]/20 flex items-center justify-center gap-2 group cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin text-black" />
                         <span>Iniciando Checkout Stripe...</span>
                       </>
                     ) : (
                       <>
-                        <span>Comprar Ingresso Agora</span>
+                        <span>Garantir Ingresso Agora</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </button>
                 </form>
 
-                <div className="mt-4 pt-3.5 border-t border-neutral-800/80 text-[11px] text-center text-neutral-400 flex items-center justify-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <div className="mt-4 pt-3.5 border-t border-white/[0.06] text-[11px] text-center text-neutral-400 flex items-center justify-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#89CFF0]" />
                   <span>Stripe 256-bit Encrypted Checkout</span>
                 </div>
               </div>

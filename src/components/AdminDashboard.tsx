@@ -114,7 +114,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               onClick={() => setActiveTab('party_bookings')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'party_bookings'
-                  ? 'bg-amber-500 text-neutral-950 shadow-md shadow-amber-950/50'
+                  ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -128,7 +128,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               onClick={() => setActiveTab('menu_orders')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'menu_orders'
-                  ? 'bg-orange-600 text-white shadow-md shadow-orange-950/50'
+                  ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -142,7 +142,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               onClick={() => setActiveTab('ticket_packages')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'ticket_packages'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-950/50'
+                  ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -156,7 +156,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               onClick={() => setActiveTab('party_packages')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'party_packages'
-                  ? 'bg-pink-600 text-white shadow-md shadow-pink-950/50'
+                  ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
@@ -170,7 +170,7 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               onClick={() => setActiveTab('menu')}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'menu'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50'
+                  ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >

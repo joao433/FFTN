@@ -234,43 +234,34 @@ export default function MenuPage({
       : categories.filter((c) => c.id === selectedCategoryTab);
 
   return (
-    <div className="min-h-screen bg-[#070707] text-neutral-100 font-sans selection:bg-red-600 selection:text-white pb-24">
+    <div className="min-h-screen bg-[#07080b] text-neutral-100 font-sans selection:bg-[#89CFF0] selection:text-black pb-24 relative">
       {/* Dynamic Ambient Glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-red-600/15 via-red-900/5 to-transparent blur-[140px] rounded-full" />
-        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-red-600/10 blur-[150px] rounded-full" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-[#89CFF0]/[0.03] blur-[150px] rounded-full" />
+        <div className="absolute top-1/2 -right-48 w-[600px] h-[600px] bg-neutral-800/10 blur-[180px] rounded-full" />
+        <div className="absolute bottom-10 -left-48 w-[500px] h-[500px] bg-neutral-900/30 blur-[160px] rounded-full" />
       </div>
 
       {/* Top Navigation Bar */}
-      <header className="relative z-20 border-b border-neutral-900 bg-black/90 backdrop-blur-md sticky top-0">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="relative z-20 border-b border-white/[0.06] bg-[#07080b]/90 backdrop-blur-xl sticky top-0 transition-all">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
           <div 
             onClick={onNavigateToHome}
             className={`flex items-center gap-3 ${onNavigateToHome ? 'cursor-pointer group' : ''}`}
           >
-            <div className="h-10 w-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/50 border border-red-500 group-hover:scale-105 transition-transform">
-              <Flame className="w-5 h-5 fill-white" />
+            <div className="h-7 w-7 rounded-lg bg-[#89CFF0] flex items-center justify-center text-black font-black text-xs shadow-sm shadow-[#89CFF0]/20">
+              <Utensils className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-lg tracking-tight uppercase text-white group-hover:text-red-400 transition-colors">
-                  Parque Aventura
-                </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30 text-[10px] font-black uppercase tracking-wider">
-                  Alimentação & Lanches
-                </span>
-              </div>
-              <p className="text-[11px] text-neutral-400 uppercase tracking-widest font-bold">
-                Fun Is Our Middle Name
-              </p>
-            </div>
+            <span className="font-extrabold text-base tracking-tight text-white group-hover:text-[#89CFF0] transition-colors">
+              Family Fun Town
+            </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
             {onNavigateToHome && (
               <button
                 onClick={onNavigateToHome}
-                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/[0.08] font-semibold transition-all cursor-pointer"
               >
                 <span>Início</span>
               </button>
@@ -279,65 +270,55 @@ export default function MenuPage({
             {onNavigateToTickets && (
               <button
                 onClick={onNavigateToTickets}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/[0.08] font-medium transition-all cursor-pointer"
               >
-                <Ticket className="w-3.5 h-3.5 text-red-500" />
-                <span className="hidden sm:inline">Ingressos</span>
+                <Ticket className="w-3.5 h-3.5 text-neutral-400" />
+                <span>Ingressos</span>
               </button>
             )}
 
             {onNavigateToParties && (
               <button
                 onClick={onNavigateToParties}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-2 rounded-full bg-white/[0.05] hover:bg-white/[0.1] text-neutral-300 hover:text-white border border-white/[0.08] font-medium transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-red-500" />
-                <span className="hidden sm:inline">Festas</span>
+                <Sparkles className="w-3.5 h-3.5 text-neutral-400" />
+                <span>Festas</span>
               </button>
             )}
 
             <button
-              className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-red-600/20 text-red-400 border border-red-500/40 font-black uppercase tracking-wider"
+              className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-full bg-[#89CFF0] text-black font-bold tracking-tight shadow-sm shadow-[#89CFF0]/20"
             >
-              <Utensils className="w-3.5 h-3.5 text-red-500" />
+              <Utensils className="w-3.5 h-3.5 text-black stroke-[2.5]" />
               <span>Cardápio</span>
             </button>
-
-            {onNavigateToDocs && (
-              <button
-                onClick={onNavigateToDocs}
-                className="hidden md:inline-block text-xs px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-400 border border-neutral-800 font-medium transition-colors"
-              >
-                Docs
-              </button>
-            )}
           </div>
         </div>
       </header>
 
       {/* Hero Banner */}
-      <section className="relative z-10 pt-10 sm:pt-14 pb-8 px-4 sm:px-6 text-center max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-widest mb-4">
-          <Utensils className="w-3.5 h-3.5" />
-          Gastronomia & Lanches do Parque
+      <section className="relative z-10 pt-12 sm:pt-16 pb-10 sm:pb-12 px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-neutral-400 tracking-wider uppercase mb-4">
+          <span className="text-[#89CFF0]">#</span> GASTRONOMIA & SNACK BAR
         </div>
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-[1.05]">
-          CARDÁPIO DO <span className="text-red-500 underline decoration-red-600/40 decoration-wavy underline-offset-8">PARQUE</span>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-[1.05]">
+          Cardápio Oficial do <span className="text-[#89CFF0]">Parque</span>
         </h1>
 
-        <p className="mt-4 text-neutral-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-          Hambúrgueres artesanais, porções crocantes, sobremesas exclusivas e bebidas geladas para recarregar a energia entre uma atração e outra.
+        <p className="mt-4 sm:mt-5 text-neutral-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+          Hambúrgueres artesanais, porções crocantes, sobremesas exclusivas e bebidas geladas para recarregar a energia entre as atrações.
         </p>
 
         {/* Category Tabs Filter */}
         <div className="mt-8 flex items-center justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
           <button
             onClick={() => setSelectedCategoryTab('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
               selectedCategoryTab === 'all'
-                ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-950/50'
-                : 'bg-neutral-900/80 hover:bg-neutral-900 text-neutral-400 hover:text-white border-neutral-800'
+                ? 'bg-[#89CFF0] text-black border-[#89CFF0] shadow-sm shadow-[#89CFF0]/20'
+                : 'bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white border-white/[0.08]'
             }`}
           >
             Todos os Itens
@@ -346,10 +327,10 @@ export default function MenuPage({
             <button
               key={cat.id}
               onClick={() => setSelectedCategoryTab(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap border ${
                 selectedCategoryTab === cat.id
-                  ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-950/50'
-                  : 'bg-neutral-900/80 hover:bg-neutral-900 text-neutral-400 hover:text-white border-neutral-800'
+                  ? 'bg-[#89CFF0] text-black border-[#89CFF0] shadow-sm shadow-[#89CFF0]/20'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white border-white/[0.08]'
               }`}
             >
               {cat.name}
@@ -359,19 +340,19 @@ export default function MenuPage({
       </section>
 
       {/* Main Content Grid: Menu Items (Left) + Cart & Checkout Form (Right) */}
-      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 mt-2">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 sm:mt-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           {/* Left Column: Menu Items by Category (7 cols) */}
           <div className="lg:col-span-7 space-y-8">
             {isLoading ? (
-              <div className="p-12 rounded-2xl bg-neutral-900/50 border border-neutral-800 text-center flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-6 h-6 text-red-500 animate-spin" />
-                <span className="text-xs text-neutral-400 uppercase tracking-wider">
+              <div className="p-16 rounded-2xl bg-[#0f1015] border border-white/[0.06] text-center flex flex-col items-center justify-center gap-3.5">
+                <Loader2 className="w-7 h-7 text-[#89CFF0] animate-spin" />
+                <span className="text-xs text-neutral-400 uppercase tracking-wider font-bold">
                   Carregando cardápio do parque...
                 </span>
               </div>
             ) : filteredCategories.length === 0 ? (
-              <div className="p-12 rounded-2xl bg-neutral-900/50 border border-neutral-800 text-center text-xs text-neutral-400 uppercase tracking-wider">
+              <div className="p-16 rounded-2xl bg-[#0f1015] border border-white/[0.06] text-center text-xs text-neutral-400 uppercase tracking-wider font-bold">
                 Nenhum item disponível no momento.
               </div>
             ) : (
@@ -383,12 +364,12 @@ export default function MenuPage({
 
                 return (
                   <section key={category.id} className="space-y-4">
-                    <div className="flex items-center gap-2 border-b border-neutral-800/80 pb-2">
-                      <div className="w-2 h-2 rounded-full bg-red-500" />
-                      <h2 className="text-sm font-black uppercase tracking-wider text-neutral-200">
+                    <div className="flex items-center gap-2 border-b border-white/[0.08] pb-2">
+                      <div className="w-2 h-2 rounded-full bg-[#89CFF0]" />
+                      <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-200">
                         {category.name}
                       </h2>
-                      <span className="text-[11px] text-neutral-400 font-mono ml-auto">
+                      <span className="text-[11px] text-neutral-500 font-mono ml-auto">
                         {categoryItems.length} {categoryItems.length === 1 ? 'item' : 'itens'}
                       </span>
                     </div>
@@ -405,19 +386,19 @@ export default function MenuPage({
                           <div
                             key={item.id}
                             id={`menu-item-${item.id}`}
-                            className={`rounded-2xl p-4 sm:p-5 transition-all duration-200 border relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                            className={`rounded-2xl p-4 sm:p-5 transition-all border relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                               inCartQty > 0
-                                ? 'bg-gradient-to-r from-red-950/30 via-neutral-900 to-neutral-900 border-red-500/60 ring-1 ring-red-500/30'
-                                : 'bg-neutral-900/80 hover:bg-neutral-900 border-neutral-800 hover:border-neutral-700'
+                                ? 'bg-[#0f1015] border-[#89CFF0] ring-1 ring-[#89CFF0]/30 shadow-lg shadow-black/50'
+                                : 'bg-[#0f1015] hover:bg-[#14151c] border-white/[0.06] hover:border-white/15'
                             }`}
                           >
                             <div className="space-y-1.5 flex-1 pr-2">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-bold text-sm sm:text-base text-white uppercase tracking-tight">
+                                <h3 className="font-bold text-sm sm:text-base text-white tracking-tight">
                                   {item.name}
                                 </h3>
                                 {hasPromo && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-red-600/20 border border-red-500/40 text-red-400 text-[10px] font-black uppercase tracking-wider">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#89CFF0]/15 border border-[#89CFF0]/30 text-[#89CFF0] text-[10px] font-bold uppercase tracking-wider">
                                     <Tag className="w-2.5 h-2.5" /> Promoção
                                   </span>
                                 )}
@@ -429,15 +410,15 @@ export default function MenuPage({
                               )}
                             </div>
 
-                            <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-neutral-800/80 pt-3 sm:pt-0 flex-shrink-0">
+                            <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-white/[0.06] pt-3 sm:pt-0 flex-shrink-0">
                               {/* Price display with promo if available */}
                               <div className="sm:text-right">
                                 {hasPromo ? (
                                   <div>
-                                    <div className="text-lg font-black text-red-400 tracking-tight">
+                                    <div className="text-lg font-black text-[#89CFF0] tracking-tight">
                                       {formatUsdPrice(item.promoPriceCents!)}
                                     </div>
-                                    <div className="text-[11px] text-neutral-400 line-through">
+                                    <div className="text-[11px] text-neutral-500 line-through">
                                       {formatUsdPrice(item.priceCents)}
                                     </div>
                                   </div>
@@ -450,10 +431,10 @@ export default function MenuPage({
 
                               {/* Add / Quantity Control */}
                               {inCartQty > 0 ? (
-                                <div className="flex items-center gap-1.5 bg-neutral-950 border border-red-500/40 rounded-xl p-1">
+                                <div className="flex items-center gap-1.5 bg-black/60 border border-[#89CFF0]/50 rounded-full p-1">
                                   <button
                                     onClick={() => updateQuantity(item.id, -1)}
-                                    className="w-7 h-7 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white flex items-center justify-center transition-colors cursor-pointer"
+                                    className="w-7 h-7 rounded-full bg-white/[0.05] hover:bg-white/[0.15] text-white flex items-center justify-center transition-colors cursor-pointer"
                                     title="Diminuir"
                                   >
                                     <Minus className="w-3.5 h-3.5" />
@@ -463,7 +444,7 @@ export default function MenuPage({
                                   </span>
                                   <button
                                     onClick={() => updateQuantity(item.id, 1)}
-                                    className="w-7 h-7 rounded-lg bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-colors cursor-pointer"
+                                    className="w-7 h-7 rounded-full bg-[#89CFF0] text-black flex items-center justify-center transition-colors cursor-pointer"
                                     title="Aumentar"
                                   >
                                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -472,7 +453,7 @@ export default function MenuPage({
                               ) : (
                                 <button
                                   onClick={() => addToCart(item)}
-                                  className="py-2 px-3.5 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md shadow-red-950/40 cursor-pointer"
+                                  className="py-2 px-4 rounded-full bg-[#89CFF0] hover:bg-[#70BAE0] text-black text-xs font-bold tracking-tight transition-all flex items-center gap-1.5 shadow-sm shadow-[#89CFF0]/20 cursor-pointer"
                                 >
                                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
                                   <span>Adicionar</span>
@@ -489,8 +470,8 @@ export default function MenuPage({
             )}
 
             {validationErrors.cart && (
-              <p className="text-xs text-red-400 flex items-center gap-1.5 font-medium">
-                <AlertCircle className="w-3.5 h-3.5" />
+              <p className="text-xs text-red-400 flex items-center gap-1.5 font-semibold bg-red-950/40 p-3 rounded-xl border border-red-900/50">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 {validationErrors.cart}
               </p>
             )}
@@ -498,13 +479,13 @@ export default function MenuPage({
 
           {/* Right Column: Cart Panel & Customer Form (5 cols) */}
           <div className="lg:col-span-5">
-            <div className="sticky top-24">
-              <div className="rounded-2xl bg-neutral-900/95 border border-neutral-800 p-6 shadow-2xl backdrop-blur-md relative overflow-hidden">
+            <div className="sticky top-20">
+              <div className="rounded-2xl bg-[#0f1015] border border-white/[0.08] p-6 sm:p-7 shadow-2xl relative overflow-hidden">
                 {/* Cart Panel Header */}
-                <div className="border-b border-neutral-800 pb-4 mb-5 flex items-center justify-between">
+                <div className="border-b border-white/[0.08] pb-4 mb-5 flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-black uppercase tracking-wider text-neutral-200 flex items-center gap-2">
-                      <ShoppingCart className="w-4 h-4 text-red-500" />
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-200 flex items-center gap-2">
+                      <ShoppingCart className="w-4 h-4 text-[#89CFF0]" />
                       Seu Pedido
                     </h2>
                     <p className="text-xs text-neutral-400 mt-0.5">
@@ -527,11 +508,11 @@ export default function MenuPage({
 
                 {/* Error Banner */}
                 {errorMessage && (
-                  <div className="mb-5 p-3.5 rounded-xl bg-red-950/80 border border-red-800/80 text-red-200 text-xs flex items-start gap-2.5">
+                  <div className="mb-5 p-4 rounded-xl bg-red-950/80 border border-red-800/80 text-red-200 text-xs flex items-start gap-3">
                     <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <strong className="block font-bold text-red-300">Falha ao criar pedido</strong>
-                      <span>{errorMessage}</span>
+                      <span className="leading-relaxed">{errorMessage}</span>
                     </div>
                   </div>
                 )}
@@ -539,7 +520,7 @@ export default function MenuPage({
                 {/* Cart Items List */}
                 <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1 mb-5">
                   {cartEntries.length === 0 ? (
-                    <div className="py-6 text-center border border-dashed border-neutral-800 rounded-xl">
+                    <div className="py-6 text-center border border-dashed border-white/[0.08] rounded-xl">
                       <Utensils className="w-6 h-6 text-neutral-600 mx-auto mb-2" />
                       <p className="text-xs text-neutral-400">
                         Clique em <strong className="text-neutral-300">+ Adicionar</strong> nos itens do cardápio para montar seu pedido.
@@ -553,10 +534,10 @@ export default function MenuPage({
                       return (
                         <div
                           key={item.id}
-                          className="p-3 rounded-xl bg-neutral-950 border border-neutral-800/80 flex items-center justify-between text-xs gap-3"
+                          className="p-3 rounded-xl bg-black/40 border border-white/[0.08] flex items-center justify-between text-xs gap-3"
                         >
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-bold text-white uppercase truncate">
+                            <h4 className="font-bold text-white truncate">
                               {item.name}
                             </h4>
                             <div className="text-[11px] text-neutral-400">
@@ -565,10 +546,10 @@ export default function MenuPage({
                           </div>
 
                           <div className="flex items-center gap-2 flex-shrink-0">
-                            <div className="flex items-center gap-1 bg-neutral-900 border border-neutral-800 rounded-lg p-0.5">
+                            <div className="flex items-center gap-1 bg-black/60 border border-white/[0.1] rounded-full p-0.5">
                               <button
                                 onClick={() => updateQuantity(item.id, -1)}
-                                className="w-5 h-5 rounded text-neutral-300 hover:text-white flex items-center justify-center cursor-pointer"
+                                className="w-5 h-5 rounded-full text-neutral-300 hover:text-white flex items-center justify-center cursor-pointer"
                               >
                                 <Minus className="w-2.5 h-2.5" />
                               </button>
@@ -577,19 +558,19 @@ export default function MenuPage({
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.id, 1)}
-                                className="w-5 h-5 rounded text-neutral-300 hover:text-white flex items-center justify-center cursor-pointer"
+                                className="w-5 h-5 rounded-full text-neutral-300 hover:text-white flex items-center justify-center cursor-pointer"
                               >
                                 <Plus className="w-2.5 h-2.5" />
                               </button>
                             </div>
 
-                            <span className="font-black text-white w-14 text-right">
+                            <span className="font-black text-[#89CFF0] w-14 text-right">
                               {formatUsdPrice(itemTotal)}
                             </span>
 
                             <button
                               onClick={() => removeFromCart(item.id)}
-                              className="text-neutral-600 hover:text-red-400 p-1 transition-colors cursor-pointer"
+                              className="text-neutral-500 hover:text-red-400 p-1 transition-colors cursor-pointer"
                               title="Remover"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -602,9 +583,9 @@ export default function MenuPage({
                 </div>
 
                 {/* Customer Details Form */}
-                <form onSubmit={handleCheckout} className="space-y-4 border-t border-neutral-800 pt-4">
-                  <div className="text-xs font-black uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5 text-red-500" />
+                <form onSubmit={handleCheckout} className="space-y-4 border-t border-white/[0.08] pt-4">
+                  <div className="text-xs font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-[#89CFF0]" />
                     Dados do Titular
                   </div>
 
@@ -612,7 +593,7 @@ export default function MenuPage({
                   <div>
                     <label
                       htmlFor="menu_holder_name"
-                      className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1"
+                      className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                     >
                       Nome Completo *
                     </label>
@@ -626,16 +607,16 @@ export default function MenuPage({
                           setHolderName(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, name: '' }));
                         }}
-                        className={`w-full px-3 py-2 pl-8 rounded-xl bg-neutral-950 border text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.name
                             ? 'border-red-500 focus:ring-red-500'
-                            : 'border-neutral-800 focus:border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
-                      <User className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5 pointer-events-none" />
+                      <User className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
                     </div>
                     {validationErrors.name && (
-                      <p className="text-[10px] text-red-400 mt-1">{validationErrors.name}</p>
+                      <p className="text-[11px] text-red-400 mt-1 font-medium">{validationErrors.name}</p>
                     )}
                   </div>
 
@@ -643,7 +624,7 @@ export default function MenuPage({
                   <div>
                     <label
                       htmlFor="menu_holder_email"
-                      className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1"
+                      className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                     >
                       E-mail *
                     </label>
@@ -657,16 +638,16 @@ export default function MenuPage({
                           setHolderEmail(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, email: '' }));
                         }}
-                        className={`w-full px-3 py-2 pl-8 rounded-xl bg-neutral-950 border text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.email
                             ? 'border-red-500 focus:ring-red-500'
-                            : 'border-neutral-800 focus:border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
-                      <Mail className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5 pointer-events-none" />
+                      <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
                     </div>
                     {validationErrors.email && (
-                      <p className="text-[10px] text-red-400 mt-1">{validationErrors.email}</p>
+                      <p className="text-[11px] text-red-400 mt-1 font-medium">{validationErrors.email}</p>
                     )}
                   </div>
 
@@ -674,7 +655,7 @@ export default function MenuPage({
                   <div>
                     <label
                       htmlFor="menu_holder_phone"
-                      className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1"
+                      className="block text-xs font-bold uppercase tracking-wider text-neutral-300 mb-1.5"
                     >
                       Telefone / WhatsApp *
                     </label>
@@ -688,30 +669,30 @@ export default function MenuPage({
                           setHolderPhone(e.target.value);
                           setValidationErrors((prev) => ({ ...prev, phone: '' }));
                         }}
-                        className={`w-full px-3 py-2 pl-8 rounded-xl bg-neutral-950 border text-xs text-white placeholder-neutral-600 focus:outline-none focus:ring-1 transition-all ${
+                        className={`w-full px-4 py-3 pl-10 rounded-xl bg-black/50 border text-xs sm:text-sm text-white placeholder-neutral-500 focus:outline-none focus:ring-1 transition-all ${
                           validationErrors.phone
                             ? 'border-red-500 focus:ring-red-500'
-                            : 'border-neutral-800 focus:border-red-500 focus:ring-red-500'
+                            : 'border-white/[0.1] focus:border-[#89CFF0] focus:ring-[#89CFF0]'
                         }`}
                       />
-                      <Phone className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5 pointer-events-none" />
+                      <Phone className="w-4 h-4 text-neutral-500 absolute left-3.5 top-3.5 pointer-events-none" />
                     </div>
                     {validationErrors.phone && (
-                      <p className="text-[10px] text-red-400 mt-1">{validationErrors.phone}</p>
+                      <p className="text-[11px] text-red-400 mt-1 font-medium">{validationErrors.phone}</p>
                     )}
                   </div>
 
                   {/* Total Order Summary */}
-                  <div className="pt-3 border-t border-neutral-800 flex items-center justify-between">
+                  <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] text-neutral-400 uppercase font-bold block">
+                      <span className="text-[11px] text-neutral-400 uppercase font-bold block tracking-wider">
                         Total do Pedido
                       </span>
-                      <span className="text-[10px] text-neutral-400">
+                      <span className="text-[11px] text-neutral-400">
                         Cobrança segura via Stripe (USD)
                       </span>
                     </div>
-                    <div className="text-xl font-black text-white">
+                    <div className="text-2xl font-black text-white tracking-tight">
                       {formatUsdPrice(totalCartCents)}
                     </div>
                   </div>
@@ -721,24 +702,24 @@ export default function MenuPage({
                     id="submit-menu-order-btn"
                     type="submit"
                     disabled={isSubmitting || cartEntries.length === 0}
-                    className="w-full py-3.5 px-6 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-wider transition-all shadow-xl shadow-red-950/50 flex items-center justify-center gap-2 group cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-full bg-[#89CFF0] hover:bg-[#70BAE0] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-black text-xs sm:text-sm font-bold tracking-tight transition-all shadow-md shadow-[#89CFF0]/20 flex items-center justify-center gap-2 group cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin text-black" />
                         <span>Processando Pedido...</span>
                       </>
                     ) : (
                       <>
-                        <span>Finalizar Pedido</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        <span>Finalizar Pedido Agora</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </button>
                 </form>
 
-                <div className="mt-4 pt-3 border-t border-neutral-800/80 text-[10px] text-center text-neutral-400 flex items-center justify-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="mt-4 pt-3.5 border-t border-white/[0.06] text-[11px] text-center text-neutral-400 flex items-center justify-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-[#89CFF0]" />
                   <span>Retirada rápida no balcão central de alimentação</span>
                 </div>
               </div>
