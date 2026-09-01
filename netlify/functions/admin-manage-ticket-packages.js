@@ -87,10 +87,15 @@ export const handler = async (event) => {
         };
       }
 
+      const formatted = (data || []).map((pkg) => ({
+        ...pkg,
+        featured_home: Boolean(pkg.featured_home),
+      }));
+
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data || []),
+        body: JSON.stringify(formatted),
       };
     }
 
@@ -110,7 +115,7 @@ export const handler = async (event) => {
     // POST: Criar novo pacote de ingresso
     // ==========================================
     if (method === 'POST') {
-      const { name, description, price_cents, display_order } = payload;
+      const { name, description, price_cents, image_url, display_order, featured_home } = payload;
 
       if (!name || typeof name !== 'string' || !name.trim()) {
         return {
@@ -139,12 +144,32 @@ export const handler = async (event) => {
         }
       }
 
+      const isFeaturedHome = Boolean(featured_home);
+      if (isFeaturedHome) {
+        const { count: currentFeaturedCount, error: countErr } = await supabase
+          .from('ticket_packages')
+          .select('id', { count: 'exact', head: true })
+          .eq('featured_home', true);
+
+        if (!countErr && typeof currentFeaturedCount === 'number' && currentFeaturedCount >= 3) {
+          return {
+            statusCode: 400,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              error: 'Você já tem 3 pacotes de ingressos destacados. Desmarque um antes de adicionar outro.',
+            }),
+          };
+        }
+      }
+
       const insertData = {
         name: name.trim(),
         description: description ? String(description).trim() : null,
         price_cents,
+        image_url: image_url ? String(image_url).trim() : null,
         display_order: parsedDisplayOrder,
         active: true, // active sempre começa true na criação
+        featured_home: isFeaturedHome,
       };
 
       const { data: newPackage, error: insertError } = await supabase
@@ -155,17 +180,38 @@ export const handler = async (event) => {
 
       if (insertError) {
         console.error('[Admin Manage Ticket Packages - POST] Erro ao inserir:', insertError);
+
+        const isMissingColumn =
+          String(insertError.message || '').includes('featured_home') ||
+          String(insertError.details || '').includes('featured_home') ||
+          insertError.code === 'PGRST204' ||
+          insertError.code === '42703';
+
+        if (isMissingColumn) {
+          return {
+            statusCode: 500,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              error:
+                "A coluna 'featured_home' ainda não foi criada na tabela ticket_packages. Execute o script de migração SQL (drizzle/0002_add_ticket_and_party_featured_home.sql) no SQL Editor do Supabase.",
+            }),
+          };
+        }
+
         return {
           statusCode: 500,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ error: 'Erro ao criar pacote de ingresso.' }),
+          body: JSON.stringify({ error: `Erro ao criar pacote de ingresso: ${insertError.message || 'Erro no banco'}` }),
         };
       }
 
       return {
         statusCode: 201,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPackage),
+        body: JSON.stringify({
+          ...newPackage,
+          featured_home: Boolean(newPackage.featured_home),
+        }),
       };
     }
 
@@ -173,7 +219,7 @@ export const handler = async (event) => {
     // PUT: Atualizar pacote existente
     // ==========================================
     if (method === 'PUT') {
-      const { id, name, description, price_cents, display_order, active } = payload;
+      const { id, name, description, price_cents, image_url, display_order, active, featured_home } = payload;
 
       if (!id || typeof id !== 'string') {
         return {
@@ -200,6 +246,10 @@ export const handler = async (event) => {
 
       if (description !== undefined) {
         updateData.description = description ? String(description).trim() : null;
+      }
+
+      if (image_url !== undefined) {
+        updateData.image_url = image_url ? String(image_url).trim() : null;
       }
 
       if (price_cents !== undefined) {
@@ -239,6 +289,36 @@ export const handler = async (event) => {
         updateData.active = active;
       }
 
+      if (featured_home !== undefined) {
+        if (typeof featured_home !== 'boolean') {
+          return {
+            statusCode: 400,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ error: 'O campo featured_home deve ser um booleano (true ou false).' }),
+          };
+        }
+
+        if (featured_home === true) {
+          const { count: currentFeaturedCount, error: countErr } = await supabase
+            .from('ticket_packages')
+            .select('id', { count: 'exact', head: true })
+            .eq('featured_home', true)
+            .neq('id', id);
+
+          if (!countErr && typeof currentFeaturedCount === 'number' && currentFeaturedCount >= 3) {
+            return {
+              statusCode: 400,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                error: 'Você já tem 3 pacotes de ingressos destacados. Desmarque um antes de adicionar outro.',
+              }),
+            };
+          }
+        }
+
+        updateData.featured_home = featured_home;
+      }
+
       const { data: updatedPackage, error: updateError } = await supabase
         .from('ticket_packages')
         .update(updateData)
@@ -248,10 +328,28 @@ export const handler = async (event) => {
 
       if (updateError) {
         console.error('[Admin Manage Ticket Packages - PUT] Erro ao atualizar:', updateError);
+
+        const isMissingColumn =
+          String(updateError.message || '').includes('featured_home') ||
+          String(updateError.details || '').includes('featured_home') ||
+          updateError.code === 'PGRST204' ||
+          updateError.code === '42703';
+
+        if (isMissingColumn) {
+          return {
+            statusCode: 500,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              error:
+                "A coluna 'featured_home' ainda não foi criada na tabela ticket_packages. Execute o script de migração SQL (drizzle/0002_add_ticket_and_party_featured_home.sql) no SQL Editor do Supabase.",
+            }),
+          };
+        }
+
         return {
           statusCode: 500,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ error: 'Erro ao atualizar pacote de ingresso.' }),
+          body: JSON.stringify({ error: `Erro ao atualizar pacote de ingresso: ${updateError.message || 'Erro no banco'}` }),
         };
       }
 
@@ -266,7 +364,10 @@ export const handler = async (event) => {
       return {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedPackage),
+        body: JSON.stringify({
+          ...updatedPackage,
+          featured_home: Boolean(updatedPackage.featured_home),
+        }),
       };
     }
   } catch (error) {

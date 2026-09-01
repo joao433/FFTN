@@ -14,7 +14,10 @@ import {
   Tag,
   X,
   Sparkles,
+  Star,
+  Home,
 } from 'lucide-react';
+import ImageUploadField from './ImageUploadField.tsx';
 
 interface MenuCategory {
   id: string;
@@ -36,6 +39,7 @@ interface MenuItem {
   image_url?: string | null;
   display_order: number;
   available: boolean;
+  featured_home?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -49,6 +53,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingFeaturedId, setIsTogglingFeaturedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
@@ -71,9 +76,10 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
   const [itemDescription, setItemDescription] = useState('');
   const [itemPriceDollars, setItemPriceDollars] = useState('');
   const [itemPromoPriceDollars, setItemPromoPriceDollars] = useState('');
-  const [itemImageUrl, setItemImageUrl] = useState('');
+  const [itemImageUrl, setItemImageUrl] = useState<string | null>(null);
   const [itemDisplayOrder, setItemDisplayOrder] = useState('0');
   const [itemAvailable, setItemAvailable] = useState(true);
+  const [itemFeaturedHome, setItemFeaturedHome] = useState(false);
   const [itemError, setItemError] = useState<string | null>(null);
 
   const fetchMenuData = useCallback(async () => {
@@ -227,9 +233,10 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
     setItemDescription('');
     setItemPriceDollars('');
     setItemPromoPriceDollars('');
-    setItemImageUrl('');
+    setItemImageUrl(null);
     setItemDisplayOrder(String(items.length * 10));
     setItemAvailable(true);
+    setItemFeaturedHome(false);
     setItemError(null);
     setIsItemModalOpen(true);
   };
@@ -243,9 +250,10 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
     setItemPromoPriceDollars(
       item.promo_price_cents ? (item.promo_price_cents / 100).toFixed(2) : ''
     );
-    setItemImageUrl(item.image_url || '');
+    setItemImageUrl(item.image_url || null);
     setItemDisplayOrder(String(item.display_order ?? 0));
     setItemAvailable(item.available);
+    setItemFeaturedHome(Boolean(item.featured_home));
     setItemError(null);
     setIsItemModalOpen(true);
   };
@@ -254,6 +262,73 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
     setIsItemModalOpen(false);
     setEditingItem(null);
     setItemError(null);
+  };
+
+  const handleToggleFeaturedHome = async (item: MenuItem) => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      onSessionExpired();
+      return;
+    }
+
+    const nextValue = !item.featured_home;
+
+    if (nextValue) {
+      const currentFeatured = items.filter((it) => it.featured_home).length;
+      if (currentFeatured >= 3) {
+        setErrorMessage('Você já tem 3 itens destacados. Desmarque um antes de adicionar outro.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => setErrorMessage(null), 5000);
+        return;
+      }
+    }
+
+    setIsTogglingFeaturedId(item.id);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch('/.netlify/functions/admin-manage-menu', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          entity: 'item',
+          id: item.id,
+          featured_home: nextValue,
+        }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('admin_token');
+        onSessionExpired();
+        return;
+      }
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao atualizar destaque na Home.');
+      }
+
+      setItems((prev) =>
+        prev.map((it) => (it.id === item.id ? { ...it, featured_home: nextValue } : it))
+      );
+
+      setSuccessNotice(
+        nextValue
+          ? `Item "${item.name}" agora está destacado na Home!`
+          : `Item "${item.name}" foi removido dos destaques da Home.`
+      );
+      setTimeout(() => setSuccessNotice(null), 4000);
+    } catch (err: unknown) {
+      console.error('[Admin Toggle Featured Error]:', err);
+      const msg = err instanceof Error ? err.message : 'Erro ao atualizar destaque na Home.';
+      setErrorMessage(msg);
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setIsTogglingFeaturedId(null);
+    }
   };
 
   const handleSaveItem = async (e: React.FormEvent) => {
@@ -298,6 +373,16 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
       }
     }
 
+    if (itemFeaturedHome) {
+      const otherFeatured = items.filter(
+        (it) => it.featured_home && it.id !== editingItem?.id
+      ).length;
+      if (otherFeatured >= 3) {
+        setItemError('Você já tem 3 itens destacados. Desmarque um antes de adicionar outro.');
+        return;
+      }
+    }
+
     const displayOrderNum = parseInt(itemDisplayOrder, 10) || 0;
     setIsSaving(true);
 
@@ -312,8 +397,9 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
         description: itemDescription.trim() || null,
         price_cents: priceCents,
         promo_price_cents: promoPriceCents,
-        image_url: itemImageUrl.trim() || null,
+        image_url: itemImageUrl || null,
         display_order: displayOrderNum,
+        featured_home: itemFeaturedHome,
       };
 
       if (isEdit) {
@@ -488,11 +574,32 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
               2. Itens do Cardápio
             </h2>
             <p className="text-xs text-neutral-400 mt-0.5">
-              Gerencie pratos, lanches, bebidas, preços promocionais e estoque.
+              Gerencie pratos, lanches, bebidas, preços promocionais e destaques na Home.
             </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            {/* Featured Home Counter Badge */}
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-950 border border-neutral-800 text-xs font-semibold text-neutral-300">
+              <Star
+                className={`w-3.5 h-3.5 ${
+                  items.filter((i) => i.featured_home).length > 0
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-neutral-500'
+                }`}
+              />
+              <span>Destaques Home:</span>
+              <span
+                className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-bold ${
+                  items.filter((i) => i.featured_home).length === 3
+                    ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40'
+                    : 'text-neutral-300 bg-neutral-800'
+                }`}
+              >
+                {items.filter((i) => i.featured_home).length}/3
+              </span>
+            </div>
+
             {/* Filter by Category */}
             <select
               value={selectedCategoryFilter}
@@ -551,6 +658,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
                     <th className="py-3.5 px-4">Preço Original</th>
                     <th className="py-3.5 px-4">Preço Promo</th>
                     <th className="py-3.5 px-4 text-center">Ordem</th>
+                    <th className="py-3.5 px-4 text-center">Destaque Home</th>
                     <th className="py-3.5 px-4 text-center">Status</th>
                     <th className="py-3.5 px-4 text-right">Ação</th>
                   </tr>
@@ -616,6 +724,39 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
                       {/* Ordem */}
                       <td className="py-3.5 px-4 text-center text-neutral-400 font-mono">
                         {item.display_order}
+                      </td>
+
+                      {/* Destaque Home Toggle */}
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          type="button"
+                          id={`btn-toggle-featured-${item.id}`}
+                          onClick={() => handleToggleFeaturedHome(item)}
+                          disabled={isTogglingFeaturedId === item.id}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                            item.featured_home
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
+                              : 'bg-neutral-800/80 text-neutral-400 border border-neutral-700 hover:text-white hover:bg-neutral-800'
+                          }`}
+                          title={
+                            item.featured_home
+                              ? 'Remover do destaque na Home'
+                              : 'Destacar na seção Gastronomia da Home (máx. 3)'
+                          }
+                        >
+                          {isTogglingFeaturedId === item.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                          ) : (
+                            <Star
+                              className={`w-3.5 h-3.5 ${
+                                item.featured_home
+                                  ? 'fill-amber-400 text-amber-400'
+                                  : 'text-neutral-500'
+                              }`}
+                            />
+                          )}
+                          <span>{item.featured_home ? 'Destacado' : 'Destacar'}</span>
+                        </button>
                       </td>
 
                       {/* Status */}
@@ -875,38 +1016,30 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
                 </div>
               </div>
 
-              {/* Imagem e Ordem */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1">
-                    URL da Foto (Opcional)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="url"
-                      placeholder="https://images.unsplash.com/..."
-                      value={itemImageUrl}
-                      onChange={(e) => setItemImageUrl(e.target.value)}
-                      className="w-full px-3 py-2 pl-7 rounded-xl bg-neutral-950 border border-neutral-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-xs text-white placeholder-neutral-600 outline-none"
-                    />
-                    <ImageIcon className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5" />
-                  </div>
-                </div>
+              {/* Image Upload Component */}
+              <ImageUploadField
+                id="menu-item-image"
+                label="Foto do Prato / Bebida"
+                value={itemImageUrl}
+                onChange={(url) => setItemImageUrl(url)}
+                accentColor="orange"
+                helperText="Envie uma foto em alta resolução do item do cardápio."
+              />
 
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1">
-                    Ordem
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      step="1"
-                      value={itemDisplayOrder}
-                      onChange={(e) => setItemDisplayOrder(e.target.value)}
-                      className="w-full px-3 py-2 pl-7 rounded-xl bg-neutral-950 border border-neutral-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-xs text-white outline-none font-mono"
-                    />
-                    <Layers className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5" />
-                  </div>
+              {/* Ordem */}
+              <div>
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1">
+                  Ordem de Exibição
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="1"
+                    value={itemDisplayOrder}
+                    onChange={(e) => setItemDisplayOrder(e.target.value)}
+                    className="w-full px-3 py-2 pl-7 rounded-xl bg-neutral-950 border border-neutral-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 text-xs text-white outline-none font-mono"
+                  />
+                  <Layers className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5" />
                 </div>
               </div>
 
@@ -926,6 +1059,61 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
                     className="sr-only peer"
                   />
                   <div className="w-10 h-5 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </div>
+
+              {/* Destacar na Home Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div className="pr-3">
+                  <div className="flex items-center gap-1.5">
+                    <Star
+                      className={`w-3.5 h-3.5 ${
+                        itemFeaturedHome ? 'fill-amber-400 text-amber-400' : 'text-neutral-500'
+                      }`}
+                    />
+                    <span className="block text-xs font-bold text-white">Destacar na Home</span>
+                    <span
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        items.filter((it) => it.featured_home && it.id !== editingItem?.id)
+                          .length +
+                          (itemFeaturedHome ? 1 : 0) ===
+                        3
+                          ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40'
+                          : 'text-neutral-300 bg-neutral-800'
+                      }`}
+                    >
+                      {items.filter((it) => it.featured_home && it.id !== editingItem?.id).length +
+                        (itemFeaturedHome ? 1 : 0)}
+                      /3
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-neutral-400 block mt-0.5">
+                    Exibir este prato nos 3 cards principais da seção Gastronomia da Home
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={itemFeaturedHome}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      if (checked) {
+                        const otherFeatured = items.filter(
+                          (it) => it.featured_home && it.id !== editingItem?.id
+                        ).length;
+                        if (otherFeatured >= 3) {
+                          setItemError(
+                            'Você já tem 3 itens destacados. Desmarque um antes de adicionar outro.'
+                          );
+                          return;
+                        }
+                      }
+                      setItemError(null);
+                      setItemFeaturedHome(checked);
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
                 </label>
               </div>
 

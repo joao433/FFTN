@@ -392,22 +392,34 @@ export default function MenuPage({
                                 : 'bg-[#0f1015] hover:bg-[#14151c] border-white/[0.06] hover:border-white/15'
                             }`}
                           >
-                            <div className="space-y-1.5 flex-1 pr-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="font-bold text-sm sm:text-base text-white tracking-tight">
-                                  {item.name}
-                                </h3>
-                                {hasPromo && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#89CFF0]/15 border border-[#89CFF0]/30 text-[#89CFF0] text-[10px] font-bold uppercase tracking-wider">
-                                    <Tag className="w-2.5 h-2.5" /> Promoção
-                                  </span>
+                            <div className="flex items-start sm:items-center gap-3.5 flex-1 pr-2">
+                              {item.imageUrl && (
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-white/[0.08] bg-black/40 flex-shrink-0">
+                                  <img
+                                    src={item.imageUrl}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                </div>
+                              )}
+                              <div className="space-y-1.5 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="font-bold text-sm sm:text-base text-white tracking-tight">
+                                    {item.name}
+                                  </h3>
+                                  {hasPromo && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#89CFF0]/15 border border-[#89CFF0]/30 text-[#89CFF0] text-[10px] font-bold uppercase tracking-wider">
+                                      <Tag className="w-2.5 h-2.5" /> Promoção
+                                    </span>
+                                  )}
+                                </div>
+                                {item.description && (
+                                  <p className="text-xs text-neutral-400 leading-relaxed max-w-lg">
+                                    {item.description}
+                                  </p>
                                 )}
                               </div>
-                              {item.description && (
-                                <p className="text-xs text-neutral-400 leading-relaxed max-w-lg">
-                                  {item.description}
-                                </p>
-                              )}
                             </div>
 
                             <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-white/[0.06] pt-3 sm:pt-0 flex-shrink-0">

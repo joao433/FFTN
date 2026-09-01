@@ -12,8 +12,11 @@ export interface TicketPackageModel {
   name: string;
   description?: string | null;
   priceCents: number;
+  imageUrl?: string | null;
   stripePriceId?: string | null;
   active: boolean;
+  featuredHome?: boolean;
+  featured_home?: boolean;
   displayOrder: number;
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -44,6 +47,8 @@ export interface PartyPackageModel {
   priceCents: number;
   imageUrl?: string | null;
   active: boolean;
+  featuredHome?: boolean;
+  featured_home?: boolean;
   displayOrder: number;
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -87,6 +92,8 @@ export interface MenuItemModel {
   imageUrl?: string | null;
   displayOrder: number;
   available: boolean;
+  featuredHome?: boolean;
+  featured_home?: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
 }

@@ -121,6 +121,7 @@ export const handler = async (event) => {
         image_url: item.image_url,
         display_order: item.display_order,
         available: item.available,
+        featured_home: Boolean(item.featured_home),
         created_at: item.created_at,
         updated_at: item.updated_at,
       }));
@@ -220,6 +221,7 @@ export const handler = async (event) => {
           promo_price_cents,
           image_url,
           display_order,
+          featured_home,
         } = payload;
 
         if (!category_id || typeof category_id !== 'string') {
@@ -280,6 +282,24 @@ export const handler = async (event) => {
           }
         }
 
+        const isFeaturedHome = Boolean(featured_home);
+        if (isFeaturedHome) {
+          const { count: currentFeaturedCount, error: countErr } = await supabase
+            .from('menu_items')
+            .select('id', { count: 'exact', head: true })
+            .eq('featured_home', true);
+
+          if (!countErr && typeof currentFeaturedCount === 'number' && currentFeaturedCount >= 3) {
+            return {
+              statusCode: 400,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                error: 'Você já tem 3 itens destacados. Desmarque um antes de adicionar outro.',
+              }),
+            };
+          }
+        }
+
         const insertData = {
           category_id,
           name: name.trim(),
@@ -289,9 +309,13 @@ export const handler = async (event) => {
           image_url: image_url ? String(image_url).trim() : null,
           display_order: parsedDisplayOrder,
           available: true, // available sempre começa true
+          featured_home: isFeaturedHome,
         };
 
-        const { data: newItem, error: insertError } = await supabase
+        let newItem = null;
+        let insertError = null;
+
+        const { data: insertedItem, error: initialInsertError } = await supabase
           .from('menu_items')
           .insert(insertData)
           .select(`
@@ -303,12 +327,52 @@ export const handler = async (event) => {
           `)
           .single();
 
-        if (insertError) {
+        if (initialInsertError) {
+          const isFeaturedHomeError =
+            String(initialInsertError.message || '').includes('featured_home') ||
+            String(initialInsertError.details || '').includes('featured_home') ||
+            initialInsertError.code === 'PGRST204' ||
+            initialInsertError.code === '42703';
+
+          if (isFeaturedHomeError && 'featured_home' in insertData) {
+            console.warn(
+              '[Admin Manage Menu - POST Item] Coluna featured_home não encontrada na tabela, tentando salvar sem ela...'
+            );
+            const fallbackData = { ...insertData };
+            delete fallbackData.featured_home;
+
+            const { data: retryItem, error: retryError } = await supabase
+              .from('menu_items')
+              .insert(fallbackData)
+              .select(`
+                *,
+                menu_categories (
+                  id,
+                  name
+                )
+              `)
+              .single();
+
+            if (retryError) {
+              insertError = retryError;
+            } else {
+              newItem = retryItem;
+            }
+          } else {
+            insertError = initialInsertError;
+          }
+        } else {
+          newItem = insertedItem;
+        }
+
+        if (insertError || !newItem) {
           console.error('[Admin Manage Menu - POST Item] Erro ao inserir:', insertError);
           return {
             statusCode: 500,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: 'Erro ao cadastrar item no cardápio.' }),
+            body: JSON.stringify({
+              error: insertError?.message || 'Erro ao cadastrar item no cardápio.',
+            }),
           };
         }
 
@@ -323,6 +387,7 @@ export const handler = async (event) => {
           image_url: newItem.image_url,
           display_order: newItem.display_order,
           available: newItem.available,
+          featured_home: Boolean(newItem.featured_home),
           created_at: newItem.created_at,
           updated_at: newItem.updated_at,
         };
@@ -433,6 +498,7 @@ export const handler = async (event) => {
           image_url,
           display_order,
           available,
+          featured_home,
         } = payload;
 
         // Se price_cents ou promo_price_cents forem alterados, precisamos garantir a consistência
@@ -565,7 +631,40 @@ export const handler = async (event) => {
           updateData.available = available;
         }
 
-        const { data: updatedItem, error: updateError } = await supabase
+        if (featured_home !== undefined) {
+          if (typeof featured_home !== 'boolean') {
+            return {
+              statusCode: 400,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ error: 'O campo featured_home deve ser um booleano (true ou false).' }),
+            };
+          }
+
+          if (featured_home === true) {
+            const { count: otherFeaturedCount, error: countErr } = await supabase
+              .from('menu_items')
+              .select('id', { count: 'exact', head: true })
+              .eq('featured_home', true)
+              .neq('id', id);
+
+            if (!countErr && typeof otherFeaturedCount === 'number' && otherFeaturedCount >= 3) {
+              return {
+                statusCode: 400,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  error: 'Você já tem 3 itens destacados. Desmarque um antes de adicionar outro.',
+                }),
+              };
+            }
+          }
+
+          updateData.featured_home = featured_home;
+        }
+
+        let updatedItem = null;
+        let updateError = null;
+
+        const { data: initialUpdatedItem, error: initialUpdateError } = await supabase
           .from('menu_items')
           .update(updateData)
           .eq('id', id)
@@ -578,12 +677,53 @@ export const handler = async (event) => {
           `)
           .maybeSingle();
 
+        if (initialUpdateError) {
+          const isFeaturedHomeError =
+            String(initialUpdateError.message || '').includes('featured_home') ||
+            String(initialUpdateError.details || '').includes('featured_home') ||
+            initialUpdateError.code === 'PGRST204' ||
+            initialUpdateError.code === '42703';
+
+          if (isFeaturedHomeError && 'featured_home' in updateData) {
+            console.warn(
+              '[Admin Manage Menu - PUT Item] Coluna featured_home não encontrada na tabela, tentando atualizar sem ela...'
+            );
+            const fallbackData = { ...updateData };
+            delete fallbackData.featured_home;
+
+            const { data: retryItem, error: retryError } = await supabase
+              .from('menu_items')
+              .update(fallbackData)
+              .eq('id', id)
+              .select(`
+                *,
+                menu_categories (
+                  id,
+                  name
+                )
+              `)
+              .maybeSingle();
+
+            if (retryError) {
+              updateError = retryError;
+            } else {
+              updatedItem = retryItem;
+            }
+          } else {
+            updateError = initialUpdateError;
+          }
+        } else {
+          updatedItem = initialUpdatedItem;
+        }
+
         if (updateError) {
           console.error('[Admin Manage Menu - PUT Item] Erro ao atualizar:', updateError);
           return {
             statusCode: 500,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: 'Erro ao atualizar item do cardápio.' }),
+            body: JSON.stringify({
+              error: updateError?.message || 'Erro ao atualizar item do cardápio.',
+            }),
           };
         }
 
@@ -606,6 +746,7 @@ export const handler = async (event) => {
           image_url: updatedItem.image_url,
           display_order: updatedItem.display_order,
           available: updatedItem.available,
+          featured_home: Boolean(updatedItem.featured_home),
           created_at: updatedItem.created_at,
           updated_at: updatedItem.updated_at,
         };

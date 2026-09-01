@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Ticket,
   Sparkles,
@@ -17,8 +17,18 @@ import {
   MapPin,
   ExternalLink,
   ChevronRight,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Footer from './Footer.tsx';
+import {
+  fetchActiveMenuItems,
+  fetchActiveTicketPackages,
+  fetchActivePartyPackages,
+  DEFAULT_MENU_ITEMS,
+  DEFAULT_TICKET_PACKAGES,
+  DEFAULT_PARTY_PACKAGES,
+} from '../lib/supabase.ts';
+import { MenuItemModel, TicketPackageModel, PartyPackageModel } from '../types/database.ts';
 
 interface HomePageProps {
   onNavigateToTickets: () => void;
@@ -33,6 +43,89 @@ export default function HomePage({
   onNavigateToMenu,
   onNavigateToDocs,
 }: HomePageProps) {
+  const [featuredItems, setFeaturedItems] = useState<MenuItemModel[]>([]);
+  const [featuredTickets, setFeaturedTickets] = useState<TicketPackageModel[]>([]);
+  const [featuredParties, setFeaturedParties] = useState<PartyPackageModel[]>([]);
+  const [isLoadingMenu, setIsLoadingMenu] = useState(true);
+  const [isLoadingTickets, setIsLoadingTickets] = useState(true);
+  const [isLoadingParties, setIsLoadingParties] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadFeaturedData() {
+      // Menu Items (max 3)
+      try {
+        const allItems = await fetchActiveMenuItems();
+        if (isMounted) {
+          const featured = allItems.filter(
+            (it) => it.featuredHome === true || it.featured_home === true
+          );
+          if (featured.length > 0) {
+            setFeaturedItems(featured.slice(0, 3));
+          } else {
+            setFeaturedItems(allItems.slice(0, 3));
+          }
+        }
+      } catch (err) {
+        console.warn('Error loading featured menu for Home:', err);
+        if (isMounted) {
+          setFeaturedItems(DEFAULT_MENU_ITEMS.slice(0, 3));
+        }
+      } finally {
+        if (isMounted) setIsLoadingMenu(false);
+      }
+
+      // Ticket Packages (max 3)
+      try {
+        const allTickets = await fetchActiveTicketPackages();
+        if (isMounted) {
+          const featured = allTickets.filter(
+            (t) => t.featuredHome === true || (t as any).featured_home === true
+          );
+          if (featured.length > 0) {
+            setFeaturedTickets(featured.slice(0, 3));
+          } else {
+            setFeaturedTickets(allTickets.slice(0, 3));
+          }
+        }
+      } catch (err) {
+        console.warn('Error loading featured tickets for Home:', err);
+        if (isMounted) {
+          setFeaturedTickets(DEFAULT_TICKET_PACKAGES.slice(0, 3));
+        }
+      } finally {
+        if (isMounted) setIsLoadingTickets(false);
+      }
+
+      // Party Packages (max 4)
+      try {
+        const allParties = await fetchActivePartyPackages();
+        if (isMounted) {
+          const featured = allParties.filter(
+            (p) => p.featuredHome === true || (p as any).featured_home === true
+          );
+          if (featured.length > 0) {
+            setFeaturedParties(featured.slice(0, 4));
+          } else {
+            setFeaturedParties(allParties.slice(0, 4));
+          }
+        }
+      } catch (err) {
+        console.warn('Error loading featured party packages for Home:', err);
+        if (isMounted) {
+          setFeaturedParties(DEFAULT_PARTY_PACKAGES.slice(0, 4));
+        }
+      } finally {
+        if (isMounted) setIsLoadingParties(false);
+      }
+    }
+
+    loadFeaturedData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   return (
     <div className="min-h-screen bg-[#07080b] text-neutral-100 font-sans selection:bg-[#89CFF0] selection:text-black flex flex-col justify-between relative overflow-x-hidden">
       {/* Background Atmospheric Lighting */}
@@ -200,134 +293,59 @@ export default function HomePage({
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1 */}
-            <div
-              onClick={onNavigateToTickets}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                {/* Photo / Visual Container */}
-                <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
-                  {/* Photo Space Placeholder */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Espaço para Foto / Vídeo ]</span>
+            {featuredTickets.map((ticket) => {
+              const formattedPrice = (ticket.priceCents / 100).toFixed(2);
+              return (
+                <div
+                  key={ticket.id}
+                  id={`home-featured-ticket-${ticket.id}`}
+                  onClick={onNavigateToTickets}
+                  className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Photo / Visual Container */}
+                    <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10 pointer-events-none" />
+                      {ticket.imageUrl ? (
+                        <img
+                          src={ticket.imageUrl}
+                          alt={ticket.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-800 flex flex-col items-center justify-center text-neutral-500 gap-2 group-hover:scale-105 transition-transform duration-500">
+                          <Ticket className="w-8 h-8 text-neutral-600" />
+                          <span className="text-xs font-medium text-neutral-500">Ingresso Oficial</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Info */}
+                    <div className="p-5">
+                      <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors line-clamp-1">
+                        {ticket.name}
+                      </h3>
+                      <p className="text-xs text-neutral-400 mt-2 leading-relaxed line-clamp-2">
+                        {ticket.description ||
+                          'Acesso completo ao complexo e suas atrações com passaporte oficial.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Price & Link */}
+                  <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                    <div className="text-neutral-400">
+                      A partir de <span className="font-bold text-white font-mono">${formattedPrice}</span>
+                    </div>
+                    <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
+                      <span>Garantir</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </div>
                   </div>
                 </div>
-
-                {/* Card Info */}
-                <div className="p-5">
-                  <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Hyper Coaster 360
-                  </h3>
-                  <div className="flex items-center gap-4 text-xs text-neutral-400 mt-2">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-500" />
-                      Setor Adrenalina
-                    </span>
-                    <span>•</span>
-                    <span>Alt. mín: 1,40m</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Price & Link */}
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <div className="text-neutral-400">
-                  A partir de <span className="font-bold text-white">R$ 59,90</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
-                  <span>Garantir</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2 */}
-            <div
-              onClick={onNavigateToTickets}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                {/* Photo / Visual Container */}
-                <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
-                  {/* Photo Space Placeholder */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Espaço para Foto / Vídeo ]</span>
-                  </div>
-                </div>
-
-                {/* Card Info */}
-                <div className="p-5">
-                  <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Splash Rapids & Quedas
-                  </h3>
-                  <div className="flex items-center gap-4 text-xs text-neutral-400 mt-2">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-500" />
-                      Setor Águas
-                    </span>
-                    <span>•</span>
-                    <span>Alt. mín: 1,10m</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Price & Link */}
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <div className="text-neutral-400">
-                  A partir de <span className="font-bold text-white">R$ 49,90</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
-                  <span>Garantir</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div
-              onClick={onNavigateToTickets}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                {/* Photo / Visual Container */}
-                <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
-                  {/* Photo Space Placeholder */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Espaço para Foto / Vídeo ]</span>
-                  </div>
-                </div>
-
-                {/* Card Info */}
-                <div className="p-5">
-                  <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Vila dos Pequenos & Carrossel
-                  </h3>
-                  <div className="flex items-center gap-4 text-xs text-neutral-400 mt-2">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-neutral-500" />
-                      Área Infantil
-                    </span>
-                    <span>•</span>
-                    <span>Livre para todas idades</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Price & Link */}
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <div className="text-neutral-400">
-                  A partir de <span className="font-bold text-white">R$ 39,90</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
-                  <span>Garantir</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
 
@@ -439,118 +457,84 @@ export default function HomePage({
             </button>
           </div>
 
-          {/* 3 Menu Cards Grid for Images */}
+          {/* 3 Menu Cards Grid for Featured Items */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Menu Card 1: Burgers Artesanais */}
-            <div
-              onClick={onNavigateToMenu}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                {/* Photo / Visual Container */}
-                <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Espaço para Foto / Vídeo ]</span>
+            {featuredItems.map((item) => {
+              const formattedPrice = (item.priceCents / 100).toFixed(2);
+              const formattedPromoPrice = item.promoPriceCents
+                ? (item.promoPriceCents / 100).toFixed(2)
+                : null;
+
+              return (
+                <div
+                  key={item.id}
+                  id={`home-featured-menu-item-${item.id}`}
+                  onClick={onNavigateToMenu}
+                  className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Photo / Visual Container */}
+                    <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/30 z-10 pointer-events-none" />
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-800 flex flex-col items-center justify-center text-neutral-500 gap-2 group-hover:scale-105 transition-transform duration-500">
+                          <Utensils className="w-8 h-8 text-neutral-600" />
+                          <span className="text-xs font-medium text-neutral-500">Gastronomia Oficial</span>
+                        </div>
+                      )}
+                      {formattedPromoPrice && (
+                        <div className="absolute top-3 right-3 z-20 px-2.5 py-1 rounded-full bg-amber-500/90 text-black text-[11px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1 backdrop-blur-sm">
+                          <Sparkles className="w-3 h-3" />
+                          <span>Oferta</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="p-5">
+                      <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors line-clamp-1">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-neutral-400 mt-2 leading-relaxed line-clamp-2">
+                        {item.description ||
+                          'Delicioso item artesanal preparado com ingredientes selecionados do complexo.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Price / Action */}
+                  <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                    <div>
+                      {formattedPromoPrice ? (
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm font-black text-amber-400 font-mono">
+                            ${formattedPromoPrice}
+                          </span>
+                          <span className="text-[11px] text-neutral-500 line-through font-mono">
+                            ${formattedPrice}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="text-neutral-400">
+                          Por <span className="font-bold text-white font-mono">${formattedPrice}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
+                      <span>Pedir</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </div>
                   </div>
                 </div>
-
-                {/* Info */}
-                <div className="p-5">
-                  <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Hambúrgueres Artesanais & Combos
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                    Smash burgers suculentos, queijo derretido, bacon crocante e molhos especiais com batata frita rústica.
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom Price / Action */}
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <div className="text-neutral-400">
-                  Opções a partir de <span className="font-bold text-white">$7.50</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
-                  <span>Pedir</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Menu Card 2: Porções & Salgados */}
-            <div
-              onClick={onNavigateToMenu}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                {/* Photo / Visual Container */}
-                <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Espaço para Foto / Vídeo ]</span>
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="p-5">
-                  <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Porções Crocantes & Petiscos
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                    Nuggets crocantes, batatas com cheddar e bacon, anéis de cebola e mini pizzas quentinhas para a família.
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom Price / Action */}
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <div className="text-neutral-400">
-                  Opções a partir de <span className="font-bold text-white">$4.90</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
-                  <span>Pedir</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Menu Card 3: Sobremesas, Shakes & Bebidas */}
-            <div
-              onClick={onNavigateToMenu}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden group hover:border-white/20 transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div>
-                {/* Photo / Visual Container */}
-                <div className="relative aspect-[16/10] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/40 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Espaço para Foto / Vídeo ]</span>
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="p-5">
-                  <h3 className="text-base font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Sobremesas, Shakes & Bebidas
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                    Churros recheados com doce de leite, milkshakes cremosos, sorvetes artesanais, sucos naturais e refrigerantes.
-                  </p>
-                </div>
-              </div>
-
-              {/* Bottom Price / Action */}
-              <div className="px-5 pb-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <div className="text-neutral-400">
-                  Opções a partir de <span className="font-bold text-white">$2.50</span>
-                </div>
-                <div className="flex items-center gap-1 font-semibold text-white group-hover:text-[#89CFF0] transition-colors">
-                  <span>Pedir</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
 
@@ -580,129 +564,53 @@ export default function HomePage({
 
           {/* 4 Party Feature / Booking Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {/* Party Card 1: Aniversário Infantil & Kids */}
-            <div
-              onClick={onNavigateToParties}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden flex flex-col justify-between group hover:border-white/20 transition-all cursor-pointer"
-            >
-              <div>
-                <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/30 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Foto Festa Kids ]</span>
+            {featuredParties.map((pkg) => {
+              const formattedPrice = (pkg.priceCents / 100).toFixed(2);
+              return (
+                <div
+                  key={pkg.id}
+                  id={`home-featured-party-${pkg.id}`}
+                  onClick={onNavigateToParties}
+                  className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden flex flex-col justify-between group hover:border-white/20 transition-all cursor-pointer"
+                >
+                  <div>
+                    <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/30 z-10 pointer-events-none" />
+                      {pkg.imageUrl ? (
+                        <img
+                          src={pkg.imageUrl}
+                          alt={pkg.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-800 flex flex-col items-center justify-center text-neutral-500 gap-2 group-hover:scale-105 transition-transform duration-500">
+                          <PartyPopper className="w-8 h-8 text-neutral-600" />
+                          <span className="text-xs font-medium text-neutral-500">Pacote de Festa</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-4">
+                      <h3 className="text-sm font-bold text-white group-hover:text-[#89CFF0] transition-colors line-clamp-1">
+                        {pkg.name}
+                      </h3>
+                      <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed line-clamp-2">
+                        {pkg.description ||
+                          'Salão exclusivo, buffet completo e passaporte ilimitado para todos os convidados.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="px-4 pb-4 pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                    <span className="text-[11px] text-neutral-400 font-mono">A partir de ${formattedPrice}</span>
+                    <span className="text-[11px] font-bold text-[#89CFF0] flex items-center gap-1">
+                      Reservar <ArrowRight className="w-3 h-3" />
+                    </span>
                   </div>
                 </div>
-
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Festa Infantil Completa
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-                    Decoração temática, bolo, docinhos, salgados e pulseiras de acesso a todos os brinquedos infantis.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-4 pb-4 pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-neutral-500 font-mono">10 a 30 pessoas</span>
-                <span className="text-[11px] font-bold text-[#89CFF0] flex items-center gap-1">
-                  Reservar <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-
-            {/* Party Card 2: Festa Teen & Lounge VIP */}
-            <div
-              onClick={onNavigateToParties}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden flex flex-col justify-between group hover:border-white/20 transition-all cursor-pointer"
-            >
-              <div>
-                <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/30 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Foto Lounge VIP ]</span>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Camarote VIP & Neon
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-                    Espaço privativo climatizado com som, iluminação especial, garçons dedicados e acesso VIP nas filas.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-4 pb-4 pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-neutral-500 font-mono">15 a 50 pessoas</span>
-                <span className="text-[11px] font-bold text-[#89CFF0] flex items-center gap-1">
-                  Reservar <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-
-            {/* Party Card 3: Corporativo & Confraternização */}
-            <div
-              onClick={onNavigateToParties}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden flex flex-col justify-between group hover:border-white/20 transition-all cursor-pointer"
-            >
-              <div>
-                <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/30 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Foto Corporativo ]</span>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Eventos Corporativos
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-                    Confraternizações de fim de ano, dinâmicas de team building, buffet executivo e locação de áreas inteiras.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-4 pb-4 pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-neutral-500 font-mono">20 a 200+ pessoas</span>
-                <span className="text-[11px] font-bold text-[#89CFF0] flex items-center gap-1">
-                  Reservar <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
-
-            {/* Party Card 4: Agendamento & Pacotes Customizados */}
-            <div
-              onClick={onNavigateToParties}
-              className="rounded-2xl bg-[#0f1015] border border-white/[0.08] overflow-hidden flex flex-col justify-between group hover:border-white/20 transition-all cursor-pointer"
-            >
-              <div>
-                <div className="relative aspect-[4/3] bg-neutral-900 overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0f1015] via-transparent to-black/30 z-10" />
-                  <div className="w-full h-full bg-neutral-800 flex items-center justify-center text-neutral-600 text-xs font-mono group-hover:scale-105 transition-transform duration-500">
-                    <span>[ Foto Agendamento ]</span>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-white group-hover:text-[#89CFF0] transition-colors">
-                    Agendamento Instantâneo
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-1.5 leading-relaxed">
-                    Escolha a data, adicione convidados e opcionais, simule o valor exato e confirme o pagamento online com total segurança.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-4 pb-4 pt-2 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                <span className="text-[11px] text-neutral-500 font-mono">Datas Disponíveis</span>
-                <span className="text-[11px] font-bold text-[#89CFF0] flex items-center gap-1">
-                  Ver Calendário <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
       </main>

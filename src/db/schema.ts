@@ -41,8 +41,10 @@ export const ticketPackages = pgTable(
     name: text('name').notNull(),
     description: text('description'),
     priceCents: integer('price_cents').notNull(),
+    imageUrl: text('image_url'),
     stripePriceId: text('stripe_price_id'),
     active: boolean('active').default(true).notNull(),
+    featuredHome: boolean('featured_home').default(false).notNull(),
     displayOrder: integer('display_order').default(0).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -54,6 +56,7 @@ export const ticketPackages = pgTable(
   (table) => [
     index('ticket_packages_active_idx').on(table.active),
     index('ticket_packages_display_order_idx').on(table.displayOrder),
+    index('idx_ticket_packages_featured_home').on(table.featuredHome),
   ]
 );
 
@@ -107,6 +110,7 @@ export const partyPackages = pgTable(
     priceCents: integer('price_cents').notNull(),
     imageUrl: text('image_url'),
     active: boolean('active').default(true).notNull(),
+    featuredHome: boolean('featured_home').default(false).notNull(),
     displayOrder: integer('display_order').default(0).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
@@ -118,6 +122,7 @@ export const partyPackages = pgTable(
   (table) => [
     index('party_packages_active_idx').on(table.active),
     index('party_packages_display_order_idx').on(table.displayOrder),
+    index('idx_party_packages_featured_home').on(table.featuredHome),
   ]
 );
 
@@ -196,6 +201,7 @@ export const menuItems = pgTable(
     imageUrl: text('image_url'),
     displayOrder: integer('display_order').default(0).notNull(),
     available: boolean('available').default(true).notNull(),
+    featuredHome: boolean('featured_home').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -207,6 +213,7 @@ export const menuItems = pgTable(
     index('menu_items_category_id_idx').on(table.categoryId),
     index('menu_items_available_idx').on(table.available),
     index('menu_items_display_order_idx').on(table.displayOrder),
+    index('menu_items_featured_home_idx').on(table.featuredHome),
   ]
 );
 

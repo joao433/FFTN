@@ -310,20 +310,32 @@ export default function PartyBooking({
                       )}
 
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1.5 pr-4 flex-1">
-                          <div className="flex items-center gap-2.5">
-                            <div className={`w-3 h-3 rounded-full border flex items-center justify-center ${isSelected ? 'border-[#89CFF0] bg-[#89CFF0]' : 'border-neutral-600'}`}>
-                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                        <div className="flex items-start sm:items-center gap-3.5 flex-1 pr-4">
+                          {pkg.imageUrl && (
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-white/[0.08] bg-black/40 flex-shrink-0">
+                              <img
+                                src={pkg.imageUrl}
+                                alt={pkg.name}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
                             </div>
-                            <h3 className="font-bold text-base sm:text-lg text-white tracking-tight">
-                              {pkg.name}
-                            </h3>
-                          </div>
-                          {pkg.description && (
-                            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed pl-5.5">
-                              {pkg.description}
-                            </p>
                           )}
+                          <div className="space-y-1.5 flex-1">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`w-3 h-3 rounded-full border flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-[#89CFF0] bg-[#89CFF0]' : 'border-neutral-600'}`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                              </div>
+                              <h3 className="font-bold text-base sm:text-lg text-white tracking-tight">
+                                {pkg.name}
+                              </h3>
+                            </div>
+                            {pkg.description && (
+                              <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed pl-5.5 sm:pl-0">
+                                {pkg.description}
+                              </p>
+                            )}
+                          </div>
                         </div>
 
                         <div className="sm:text-right flex-shrink-0 flex sm:flex-col items-baseline sm:items-end justify-between border-t sm:border-t-0 border-white/[0.06] pt-3 sm:pt-0 pl-5.5 sm:pl-0">

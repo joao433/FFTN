@@ -10,15 +10,20 @@ import {
   DollarSign,
   Layers,
   X,
+  Star,
+  Image as ImageIcon,
 } from 'lucide-react';
+import ImageUploadField from './ImageUploadField.tsx';
 
 interface TicketPackage {
   id: string;
   name: string;
   description?: string | null;
   price_cents: number;
+  image_url?: string | null;
   display_order: number;
   active: boolean;
+  featured_home?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -31,6 +36,7 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
   const [packages, setPackages] = useState<TicketPackage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTogglingFeaturedId, setIsTogglingFeaturedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
@@ -42,8 +48,10 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formPriceDollars, setFormPriceDollars] = useState('');
+  const [formImageUrl, setFormImageUrl] = useState<string | null>(null);
   const [formDisplayOrder, setFormDisplayOrder] = useState('0');
   const [formActive, setFormActive] = useState(true);
+  const [formFeaturedHome, setFormFeaturedHome] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const fetchPackages = useCallback(async () => {
@@ -96,8 +104,10 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
     setFormName('');
     setFormDescription('');
     setFormPriceDollars('');
+    setFormImageUrl(null);
     setFormDisplayOrder(String(packages.length * 10));
     setFormActive(true);
+    setFormFeaturedHome(false);
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -107,8 +117,10 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
     setFormName(pkg.name);
     setFormDescription(pkg.description || '');
     setFormPriceDollars((pkg.price_cents / 100).toFixed(2));
+    setFormImageUrl(pkg.image_url || null);
     setFormDisplayOrder(String(pkg.display_order ?? 0));
     setFormActive(pkg.active);
+    setFormFeaturedHome(Boolean(pkg.featured_home));
     setFormError(null);
     setIsModalOpen(true);
   };
@@ -117,6 +129,75 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
     setIsModalOpen(false);
     setEditingPackage(null);
     setFormError(null);
+  };
+
+  const handleToggleFeaturedHome = async (pkg: TicketPackage) => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      onSessionExpired();
+      return;
+    }
+
+    const nextValue = !pkg.featured_home;
+
+    if (nextValue) {
+      const currentFeatured = packages.filter((p) => p.featured_home).length;
+      if (currentFeatured >= 3) {
+        setErrorMessage('Você já tem 3 pacotes de ingressos destacados. Desmarque um antes de adicionar outro.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => setErrorMessage(null), 5000);
+        return;
+      }
+    }
+
+    setIsTogglingFeaturedId(pkg.id);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch('/.netlify/functions/admin-manage-ticket-packages', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: pkg.id,
+          featured_home: nextValue,
+        }),
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('admin_token');
+        onSessionExpired();
+        return;
+      }
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erro ao alterar destaque na Home.');
+      }
+
+      setPackages((prev) =>
+        prev.map((item) =>
+          item.id === pkg.id ? { ...item, featured_home: nextValue } : item
+        )
+      );
+
+      setSuccessNotice(
+        nextValue
+          ? `"${pkg.name}" agora está em destaque na Home!`
+          : `"${pkg.name}" removido dos destaques da Home.`
+      );
+      setTimeout(() => setSuccessNotice(null), 3500);
+    } catch (err: unknown) {
+      console.error('[Admin Toggle Ticket Featured Error]:', err);
+      const msg = err instanceof Error ? err.message : 'Erro ao atualizar destaque.';
+      setErrorMessage(msg);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+      setIsTogglingFeaturedId(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,7 +234,9 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
         name: formName.trim(),
         description: formDescription.trim() || null,
         price_cents: priceCents,
+        image_url: formImageUrl || null,
         display_order: displayOrderNum,
+        featured_home: formFeaturedHome,
       };
 
       if (isEdit) {
@@ -210,18 +293,41 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
             Pacotes de Ingressos
           </h2>
           <p className="text-xs text-neutral-400 mt-0.5">
-            Gerencie opções de passaportes, valores e disponibilidade para venda pública.
+            Gerencie opções de passaportes, fotos, valores e destaques na Home.
           </p>
         </div>
 
-        <button
-          id="btn-new-ticket-package"
-          onClick={openCreateModal}
-          className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-red-950/40 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Novo Pacote</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          {/* Featured Home Counter Badge */}
+          <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-950 border border-neutral-800 text-xs font-semibold text-neutral-300">
+            <Star
+              className={`w-3.5 h-3.5 ${
+                packages.filter((p) => p.featured_home).length > 0
+                  ? 'fill-amber-400 text-amber-400'
+                  : 'text-neutral-500'
+              }`}
+            />
+            <span>Destaques Home:</span>
+            <span
+              className={`px-1.5 py-0.5 rounded text-[11px] font-mono font-bold ${
+                packages.filter((p) => p.featured_home).length === 3
+                  ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40'
+                  : 'text-neutral-300 bg-neutral-800'
+              }`}
+            >
+              {packages.filter((p) => p.featured_home).length}/3
+            </span>
+          </div>
+
+          <button
+            id="btn-new-ticket-package"
+            onClick={openCreateModal}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 active:bg-red-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-red-950/40 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Novo Pacote</span>
+          </button>
+        </div>
       </div>
 
       {/* Alerts */}
@@ -263,11 +369,13 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-neutral-800 bg-neutral-950/60 text-neutral-400 uppercase tracking-wider font-bold text-[11px]">
+                  <th className="py-3.5 px-4">Foto</th>
                   <th className="py-3.5 px-4">Nome do Pacote</th>
                   <th className="py-3.5 px-4">Descrição</th>
                   <th className="py-3.5 px-4">Preço</th>
                   <th className="py-3.5 px-4 text-center">Ordem</th>
                   <th className="py-3.5 px-4 text-center">Status</th>
+                  <th className="py-3.5 px-4 text-center">Destaque Home</th>
                   <th className="py-3.5 px-4 text-right">Ação</th>
                 </tr>
               </thead>
@@ -278,6 +386,24 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
                     id={`package-row-${pkg.id}`}
                     className="hover:bg-neutral-800/30 transition-colors"
                   >
+                    {/* Foto */}
+                    <td className="py-3 px-4">
+                      {pkg.image_url ? (
+                        <div className="w-11 h-11 rounded-lg overflow-hidden border border-neutral-700/60 bg-neutral-950 flex-shrink-0">
+                          <img
+                            src={pkg.image_url}
+                            alt={pkg.name}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-11 h-11 rounded-lg border border-dashed border-neutral-800 bg-neutral-950 flex items-center justify-center text-neutral-600">
+                          <ImageIcon className="w-4 h-4" />
+                        </div>
+                      )}
+                    </td>
+
                     {/* Nome */}
                     <td className="py-3.5 px-4 font-semibold text-white">
                       <div className="flex items-center gap-2">
@@ -287,7 +413,7 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
                     </td>
 
                     {/* Descrição */}
-                    <td className="py-3.5 px-4 text-neutral-400 max-w-[260px] truncate">
+                    <td className="py-3.5 px-4 text-neutral-400 max-w-[240px] truncate">
                       {pkg.description || <span className="italic text-neutral-600">Sem descrição</span>}
                     </td>
 
@@ -314,6 +440,39 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
                       )}
                     </td>
 
+                    {/* Destaque Home Toggle */}
+                    <td className="py-3.5 px-4 text-center">
+                      <button
+                        type="button"
+                        id={`btn-toggle-ticket-featured-${pkg.id}`}
+                        onClick={() => handleToggleFeaturedHome(pkg)}
+                        disabled={isTogglingFeaturedId === pkg.id}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                          pkg.featured_home
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
+                            : 'bg-neutral-800/80 text-neutral-400 border border-neutral-700 hover:text-white hover:bg-neutral-800'
+                        }`}
+                        title={
+                          pkg.featured_home
+                            ? 'Remover do destaque na Home'
+                            : 'Destacar na seção Ingressos da Home (máx. 3)'
+                        }
+                      >
+                        {isTogglingFeaturedId === pkg.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                        ) : (
+                          <Star
+                            className={`w-3.5 h-3.5 ${
+                              pkg.featured_home
+                                ? 'fill-amber-400 text-amber-400'
+                                : 'text-neutral-500'
+                            }`}
+                          />
+                        )}
+                        <span>{pkg.featured_home ? 'Destacado' : 'Destacar'}</span>
+                      </button>
+                    </td>
+
                     {/* Ação */}
                     <td className="py-3.5 px-4 text-right">
                       <button
@@ -335,8 +494,8 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
 
       {/* Modal Criar / Editar Pacote */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-2xl space-y-4 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
               <h3 className="text-sm font-black uppercase tracking-wider text-white flex items-center gap-2">
                 <Ticket className="w-4 h-4 text-red-500" />
@@ -387,6 +546,16 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
                 />
               </div>
 
+              {/* Image Upload Component */}
+              <ImageUploadField
+                id="ticket-package-image"
+                label="Foto Ilustrativa do Pacote"
+                value={formImageUrl}
+                onChange={(url) => setFormImageUrl(url)}
+                accentColor="red"
+                helperText="Envie uma foto em alta resolução do passaporte ou atração correspondente."
+              />
+
               {/* Preço e Ordem */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -425,7 +594,7 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
                 </div>
               </div>
 
-              {/* Ativo Toggle (apenas na edição ou opcional) */}
+              {/* Ativo Toggle */}
               {editingPackage && (
                 <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-neutral-800">
                   <div>
@@ -445,6 +614,58 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
                   </label>
                 </div>
               )}
+
+              {/* Destacar na Home Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-neutral-800">
+                <div className="pr-3">
+                  <div className="flex items-center gap-1.5">
+                    <Star
+                      className={`w-3.5 h-3.5 ${
+                        formFeaturedHome ? 'fill-amber-400 text-amber-400' : 'text-neutral-500'
+                      }`}
+                    />
+                    <span className="block text-xs font-bold text-white">Destacar na Home</span>
+                    <span
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        packages.filter((p) => p.featured_home && p.id !== editingPackage?.id).length +
+                          (formFeaturedHome ? 1 : 0) ===
+                        3
+                          ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40'
+                          : 'text-neutral-300 bg-neutral-800'
+                      }`}
+                    >
+                      {packages.filter((p) => p.featured_home && p.id !== editingPackage?.id).length +
+                        (formFeaturedHome ? 1 : 0)}
+                      /3
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-neutral-400 block mt-0.5">
+                    Exibir este passaporte na vitrine principal da página inicial (máximo de 3).
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={formFeaturedHome}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      if (checked) {
+                        const currentCount = packages.filter(
+                          (p) => p.featured_home && p.id !== editingPackage?.id
+                        ).length;
+                        if (currentCount >= 3) {
+                          setFormError('Você já tem 3 pacotes de ingressos destacados. Desmarque um antes.');
+                          return;
+                        }
+                      }
+                      setFormError(null);
+                      setFormFeaturedHome(checked);
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-neutral-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
+              </div>
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-800">
