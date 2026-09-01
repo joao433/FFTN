@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import HomePage from './components/HomePage.tsx';
 import TicketPurchase from './components/TicketPurchase.tsx';
 import PartyBooking from './components/PartyBooking.tsx';
 import MenuPage from './components/MenuPage.tsx';
@@ -7,10 +8,10 @@ import AdminDashboard from './components/AdminDashboard.tsx';
 import SuccessView from './components/SuccessView.tsx';
 import CancelView from './components/CancelView.tsx';
 
-type AppRoute = 'tickets' | 'festas' | 'cardapio' | 'admin' | 'admin-dashboard' | 'sucesso' | 'cancelado';
+type AppRoute = 'home' | 'tickets' | 'festas' | 'cardapio' | 'admin' | 'admin-dashboard' | 'sucesso' | 'cancelado';
 
 export default function App() {
-  const [currentRoute, setCurrentRoute] = useState<AppRoute>('tickets');
+  const [currentRoute, setCurrentRoute] = useState<AppRoute>('home');
 
   useEffect(() => {
     // Detect route based on URL path or search query parameter
@@ -30,8 +31,10 @@ export default function App() {
         setCurrentRoute('festas');
       } else if (pathname.includes('/cardapio') || search.includes('page=cardapio')) {
         setCurrentRoute('cardapio');
-      } else {
+      } else if (pathname.includes('/ingressos') || search.includes('page=ingressos') || search.includes('page=tickets')) {
         setCurrentRoute('tickets');
+      } else {
+        setCurrentRoute('home');
       }
     };
 
@@ -43,6 +46,7 @@ export default function App() {
   const navigateTo = (route: AppRoute) => {
     setCurrentRoute(route);
     let newPath = '/';
+    if (route === 'tickets') newPath = '/ingressos';
     if (route === 'festas') newPath = '/festas';
     if (route === 'cardapio') newPath = '/cardapio';
     if (route === 'admin') newPath = '/admin';
@@ -60,8 +64,17 @@ export default function App() {
   return (
     <div className="w-full min-h-screen bg-black">
       {/* Route Views */}
+      {currentRoute === 'home' && (
+        <HomePage
+          onNavigateToTickets={() => navigateTo('tickets')}
+          onNavigateToParties={() => navigateTo('festas')}
+          onNavigateToMenu={() => navigateTo('cardapio')}
+        />
+      )}
+
       {currentRoute === 'tickets' && (
         <TicketPurchase
+          onNavigateToHome={() => navigateTo('home')}
           onNavigateToParties={() => navigateTo('festas')}
           onNavigateToMenu={() => navigateTo('cardapio')}
         />
@@ -69,6 +82,7 @@ export default function App() {
 
       {currentRoute === 'festas' && (
         <PartyBooking
+          onNavigateToHome={() => navigateTo('home')}
           onNavigateToTickets={() => navigateTo('tickets')}
           onNavigateToMenu={() => navigateTo('cardapio')}
         />
@@ -76,6 +90,7 @@ export default function App() {
 
       {currentRoute === 'cardapio' && (
         <MenuPage
+          onNavigateToHome={() => navigateTo('home')}
           onNavigateToTickets={() => navigateTo('tickets')}
           onNavigateToParties={() => navigateTo('festas')}
         />
@@ -84,14 +99,14 @@ export default function App() {
       {currentRoute === 'admin' && (
         <AdminLogin
           onLoginSuccess={() => navigateTo('admin-dashboard')}
-          onNavigateHome={() => navigateTo('tickets')}
+          onNavigateHome={() => navigateTo('home')}
         />
       )}
 
       {currentRoute === 'admin-dashboard' && (
         <AdminDashboard
           onLogout={() => navigateTo('admin')}
-          onNavigateHome={() => navigateTo('tickets')}
+          onNavigateHome={() => navigateTo('home')}
         />
       )}
 

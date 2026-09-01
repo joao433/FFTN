@@ -23,14 +23,21 @@ import {
 } from 'lucide-react';
 import type { PartyPackageModel } from '../types/database.ts';
 import { fetchActivePartyPackages } from '../lib/supabase.ts';
+import Footer from './Footer.tsx';
 
 interface PartyBookingProps {
+  onNavigateToHome?: () => void;
   onNavigateToTickets?: () => void;
   onNavigateToMenu?: () => void;
   onNavigateToDocs?: () => void;
 }
 
-export default function PartyBooking({ onNavigateToTickets, onNavigateToMenu, onNavigateToDocs }: PartyBookingProps) {
+export default function PartyBooking({
+  onNavigateToHome,
+  onNavigateToTickets,
+  onNavigateToMenu,
+  onNavigateToDocs,
+}: PartyBookingProps) {
   const [packages, setPackages] = useState<PartyPackageModel[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<PartyPackageModel | null>(null);
   const [isLoadingPackages, setIsLoadingPackages] = useState(true);
@@ -168,13 +175,16 @@ export default function PartyBooking({ onNavigateToTickets, onNavigateToMenu, on
       {/* Top Brand Bar */}
       <header className="relative z-20 border-b border-neutral-900 bg-black/90 backdrop-blur-md sticky top-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/50 border border-red-500">
+          <div 
+            onClick={onNavigateToHome}
+            className={`flex items-center gap-3 ${onNavigateToHome ? 'cursor-pointer group' : ''}`}
+          >
+            <div className="h-10 w-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/50 border border-red-500 group-hover:scale-105 transition-transform">
               <Flame className="w-5 h-5 fill-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-lg tracking-tight uppercase text-white">
+                <span className="font-black text-lg tracking-tight uppercase text-white group-hover:text-red-400 transition-colors">
                   Parque Aventura
                 </span>
                 <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30 text-[10px] font-black uppercase tracking-wider">
@@ -188,20 +198,36 @@ export default function PartyBooking({ onNavigateToTickets, onNavigateToMenu, on
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {onNavigateToHome && (
+              <button
+                onClick={onNavigateToHome}
+                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                <span>Início</span>
+              </button>
+            )}
+
             {onNavigateToTickets && (
               <button
                 onClick={onNavigateToTickets}
-                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors cursor-pointer"
               >
                 <Ticket className="w-3.5 h-3.5 text-red-500" />
                 <span>Ingressos</span>
               </button>
             )}
 
+            <button
+              className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-red-600/20 text-red-400 border border-red-500/40 font-black uppercase tracking-wider"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-red-500" />
+              <span>Festas</span>
+            </button>
+
             {onNavigateToMenu && (
               <button
                 onClick={onNavigateToMenu}
-                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors cursor-pointer"
               >
                 <Utensils className="w-3.5 h-3.5 text-red-500" />
                 <span>Cardápio</span>
@@ -604,6 +630,14 @@ export default function PartyBooking({ onNavigateToTickets, onNavigateToMenu, on
           </div>
         </div>
       </main>
+
+      {/* Global Footer */}
+      <Footer
+        onNavigateToHome={onNavigateToHome}
+        onNavigateToTickets={onNavigateToTickets}
+        onNavigateToParties={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onNavigateToMenu={onNavigateToMenu}
+      />
     </div>
   );
 }

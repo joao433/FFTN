@@ -46,12 +46,13 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
   return (
     <div className="min-h-screen bg-[#09090b] text-neutral-100 font-sans pb-16 selection:bg-red-600 selection:text-white">
       {/* Top Admin Navbar */}
-      <header className="border-b border-neutral-800/80 bg-neutral-950/90 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
-          {/* Logo / Title */}
-          <div className="flex items-center justify-between">
+      <header className="border-b border-neutral-800/80 bg-neutral-950/95 backdrop-blur-md sticky top-0 z-30 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 space-y-3">
+          {/* Top Row: Brand & Actions */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Logo / Title */}
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-base shadow-md border border-red-500">
+              <div className="h-9 w-9 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-base shadow-md border border-red-500 flex-shrink-0">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
@@ -67,11 +68,23 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
               </div>
             </div>
 
-            {/* Mobile Actions */}
-            <div className="flex md:hidden items-center gap-2">
+            {/* Top Right Actions (Site + Logout) */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {onNavigateHome && (
+                <button
+                  onClick={onNavigateHome}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition-colors cursor-pointer"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+                  <span className="hidden sm:inline">Ver Site Público</span>
+                  <span className="sm:hidden">Site</span>
+                </button>
+              )}
+
               <button
+                id="admin-logout-btn"
                 onClick={handleLogoutClick}
-                className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/60 font-bold transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/60 font-bold transition-colors cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Sair</span>
@@ -79,114 +92,92 @@ export default function AdminDashboard({ onLogout, onNavigateHome }: AdminDashbo
             </div>
           </div>
 
-          {/* Desktop Navigation Tabs */}
-          <nav className="flex items-center gap-1.5 p-1 rounded-xl bg-neutral-900/90 border border-neutral-800 overflow-x-auto scrollbar-none">
-            {/* Tab: Ingressos */}
+          {/* Navigation Tabs (Full Width, all 6 tabs visible) */}
+          <nav className="flex items-center gap-2 p-1.5 rounded-xl bg-neutral-900/90 border border-neutral-800 overflow-x-auto">
+            {/* Tab 1: Ingressos */}
             <button
               id="admin-tab-tickets"
               onClick={() => setActiveTab('tickets')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'tickets'
                   ? 'bg-red-600 text-white shadow-md shadow-red-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
-              <Ticket className="w-3.5 h-3.5" />
+              <Ticket className="w-4 h-4" />
               <span>Ingressos</span>
             </button>
 
-            {/* Tab: Reservas de Festa */}
+            {/* Tab 2: Reservas de Festa */}
             <button
               id="admin-tab-party-bookings"
               onClick={() => setActiveTab('party_bookings')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'party_bookings'
                   ? 'bg-amber-500 text-neutral-950 shadow-md shadow-amber-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
-              <CalendarDays className="w-3.5 h-3.5" />
+              <CalendarDays className="w-4 h-4" />
               <span>Reservas de Festa</span>
             </button>
 
-            {/* Tab: Pedidos do Cardápio */}
+            {/* Tab 3: Pedidos do Cardápio */}
             <button
               id="admin-tab-menu-orders"
               onClick={() => setActiveTab('menu_orders')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'menu_orders'
                   ? 'bg-orange-600 text-white shadow-md shadow-orange-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
-              <ShoppingBag className="w-3.5 h-3.5" />
+              <ShoppingBag className="w-4 h-4" />
               <span>Pedidos do Cardápio</span>
             </button>
 
-            {/* Tab: Pacotes de Ingresso */}
+            {/* Tab 4: Pacotes de Ingresso */}
             <button
               id="admin-tab-ticket-packages"
               onClick={() => setActiveTab('ticket_packages')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'ticket_packages'
-                  ? 'bg-neutral-700 text-white shadow-md shadow-neutral-950/50'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
-              <Package className="w-3.5 h-3.5" />
+              <Package className="w-4 h-4" />
               <span>Pacotes de Ingresso</span>
             </button>
 
-            {/* Tab: Pacotes de Festa */}
+            {/* Tab 5: Pacotes de Festa */}
             <button
               id="admin-tab-party-packages"
               onClick={() => setActiveTab('party_packages')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'party_packages'
-                  ? 'bg-neutral-700 text-white shadow-md shadow-neutral-950/50'
+                  ? 'bg-pink-600 text-white shadow-md shadow-pink-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
-              <PartyPopper className="w-3.5 h-3.5" />
+              <PartyPopper className="w-4 h-4" />
               <span>Pacotes de Festa</span>
             </button>
 
-            {/* Tab: Cardápio */}
+            {/* Tab 6: Cardápio */}
             <button
               id="admin-tab-menu"
               onClick={() => setActiveTab('menu')}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === 'menu'
-                  ? 'bg-neutral-700 text-white shadow-md shadow-neutral-950/50'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/50'
                   : 'text-neutral-400 hover:text-white hover:bg-neutral-800/60'
               }`}
             >
-              <UtensilsCrossed className="w-3.5 h-3.5" />
+              <UtensilsCrossed className="w-4 h-4" />
               <span>Cardápio</span>
             </button>
           </nav>
-
-          {/* Desktop Header Actions */}
-          <div className="hidden md:flex items-center gap-3">
-            {onNavigateHome && (
-              <button
-                onClick={onNavigateHome}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 transition-colors cursor-pointer"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
-                <span>Ver Site Público</span>
-              </button>
-            )}
-
-            <button
-              id="admin-logout-btn-desktop"
-              onClick={handleLogoutClick}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/60 font-bold transition-colors cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sair</span>
-            </button>
-          </div>
         </div>
       </header>
 

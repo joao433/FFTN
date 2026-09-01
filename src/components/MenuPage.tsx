@@ -23,8 +23,10 @@ import {
 } from 'lucide-react';
 import type { MenuCategoryModel, MenuItemModel } from '../types/database.ts';
 import { fetchActiveMenuCategories, fetchActiveMenuItems } from '../lib/supabase.ts';
+import Footer from './Footer.tsx';
 
 interface MenuPageProps {
+  onNavigateToHome?: () => void;
   onNavigateToTickets?: () => void;
   onNavigateToParties?: () => void;
   onNavigateToDocs?: () => void;
@@ -36,6 +38,7 @@ interface CartItem {
 }
 
 export default function MenuPage({
+  onNavigateToHome,
   onNavigateToTickets,
   onNavigateToParties,
   onNavigateToDocs,
@@ -241,13 +244,16 @@ export default function MenuPage({
       {/* Top Navigation Bar */}
       <header className="relative z-20 border-b border-neutral-900 bg-black/90 backdrop-blur-md sticky top-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/50 border border-red-500">
+          <div 
+            onClick={onNavigateToHome}
+            className={`flex items-center gap-3 ${onNavigateToHome ? 'cursor-pointer group' : ''}`}
+          >
+            <div className="h-10 w-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-red-900/50 border border-red-500 group-hover:scale-105 transition-transform">
               <Flame className="w-5 h-5 fill-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-black text-lg tracking-tight uppercase text-white">
+                <span className="font-black text-lg tracking-tight uppercase text-white group-hover:text-red-400 transition-colors">
                   Parque Aventura
                 </span>
                 <span className="hidden sm:inline-block px-2 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30 text-[10px] font-black uppercase tracking-wider">
@@ -261,6 +267,15 @@ export default function MenuPage({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {onNavigateToHome && (
+              <button
+                onClick={onNavigateToHome}
+                className="hidden sm:flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-neutral-800 font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                <span>Início</span>
+              </button>
+            )}
+
             {onNavigateToTickets && (
               <button
                 onClick={onNavigateToTickets}
@@ -731,6 +746,14 @@ export default function MenuPage({
           </div>
         </div>
       </main>
+
+      {/* Global Footer */}
+      <Footer
+        onNavigateToHome={onNavigateToHome}
+        onNavigateToTickets={onNavigateToTickets}
+        onNavigateToParties={onNavigateToParties}
+        onNavigateToMenu={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      />
     </div>
   );
 }
