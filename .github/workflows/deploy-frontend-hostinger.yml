@@ -1,0 +1,50 @@
+name: Deploy Frontend Hostinger (FTP)
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'supabase/**'
+      - '.github/workflows/deploy-supabase-functions.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build frontend
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://hyfdqwnuvcyxrnmqikfu.supabase.co/functions/v1' }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://hyfdqwnuvcyxrnmqikfu.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY || '' }}
+        run: bun run build
+
+      - name: Ensure .htaccess is in dist
+        run: |
+          if [ -f public/.htaccess ]; then
+            cp -f public/.htaccess dist/.htaccess
+            echo "Verified public/.htaccess copied to dist/.htaccess"
+          fi
+          test -f dist/.htaccess || { echo "Error: dist/.htaccess missing!"; exit 1; }
+
+      - name: Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist/
+          server-dir: ${{ vars.FTP_SERVER_DIR || 'public_html/' }}

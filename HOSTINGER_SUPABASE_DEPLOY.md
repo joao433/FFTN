@@ -77,35 +77,29 @@ No painel do Stripe:
 
 ---
 
-## 2. Compilação e Deploy do Frontend no Hostinger
+## 2. Deploy do Frontend no Hostinger
 
-### Passo 1: Configurar Variáveis de Ambiente no Frontend
-No arquivo `.env` (ou `.env.production`) antes do build:
+### Opção A: Deploy Automático via GitHub Actions (Recomendado)
+O repositório possui o workflow `.github/workflows/deploy-frontend-hostinger.yml`. A cada push na branch `main` com alterações no frontend, ele instala dependências, compila o projeto com a regra do `.htaccess` e faz upload via FTP diretamente para `/public_html` na Hostinger.
 
-```env
-VITE_SUPABASE_URL=https://<seu-projeto>.supabase.co
-VITE_SUPABASE_ANON_KEY=<sua-anon-key-publica>
-VITE_API_BASE_URL=https://<seu-projeto>.supabase.co/functions/v1
-```
+#### 1. Configurar Secrets no GitHub:
+Acesse no GitHub: **Settings** -> **Secrets and variables** -> **Actions** -> aba **Secrets**:
+- `FTP_SERVER`: Endereço do host FTP da Hostinger (ex: `ftp.seudominio.com` ou o IP/hostname informado no hPanel).
+- `FTP_USERNAME`: Usuário da conta FTP da Hostinger.
+- `FTP_PASSWORD`: Senha da conta FTP da Hostinger.
 
-### Passo 2: Gerar os Arquivos de Produção
-Execute no terminal:
+#### 2. Configurar Variables no GitHub (Opcional / Recomendado):
+Na mesma tela, na aba **Variables**:
+- `VITE_API_BASE_URL`: `https://hyfdqwnuvcyxrnmqikfu.supabase.co/functions/v1` (o workflow já possui este valor configurado como fallback padrão caso não seja preenchido).
+- `FTP_SERVER_DIR`: `public_html/` (padrão já configurado no workflow).
 
-```bash
-npm run build
-```
+---
 
-Isso gerará a pasta `dist/` contendo:
-- `index.html`
-- Pasta `assets/` com JS/CSS otimizados
-- Arquivo `.htaccess` (copiado automaticamente da pasta `public/`) com suporte a SPA e cache otimizado.
-
-### Passo 3: Enviar para a Hostinger
-1. Abra o **hPanel** da Hostinger.
-2. Vá em **Gerenciador de Arquivos** (File Manager) do seu domínio.
-3. Entre na pasta `public_html/`.
-4. Faça upload de **todo o conteúdo de dentro da pasta `dist/`** diretamente para `public_html/`.
-5. Verifique se o arquivo `.htaccess` está presente em `public_html/.htaccess`. Ele é responsável pelo roteamento SPA (garantindo que recarregar páginas como `/ingressos`, `/festas`, `/cardapio` ou `/admin` não cause erro 404).
+### Opção B: Build e Envio Manual via Gerenciador de Arquivos
+Caso prefira compilar localmente na sua máquina:
+1. Execute `npm run build` ou `bun run build`.
+2. No hPanel da Hostinger, abra o **Gerenciador de Arquivos** na pasta `public_html/`.
+3. Envie todo o conteúdo gerado dentro da pasta `dist/` (incluindo o arquivo `.htaccess`).
 
 ---
 
