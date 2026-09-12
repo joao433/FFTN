@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { TicketPackageModel } from '../types/database.ts';
 import { fetchActiveTicketPackages } from '../lib/supabase.ts';
+import { getApiUrl } from '../lib/api.ts';
 import Footer from './Footer.tsx';
 import ParkLogo from './ParkLogo.tsx';
 import ThematicPlaceholder from './ThematicPlaceholder.tsx';
@@ -113,7 +114,7 @@ export default function TicketPurchase({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/.netlify/functions/create-checkout-session', {
+      const response = await fetch(getApiUrl('create-checkout-session'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

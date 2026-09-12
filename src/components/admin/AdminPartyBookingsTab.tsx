@@ -21,6 +21,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAdminLanguage } from '../../lib/adminI18n.tsx';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface PartyBookingRecord {
   id: string;
@@ -83,7 +84,7 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
     if (!token) return;
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-party-payment-settings', {
+      const response = await fetch(getApiUrl('admin-manage-party-payment-settings'), {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
     setSettingsNotice(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-party-payment-settings', {
+      const response = await fetch(getApiUrl('admin-manage-party-payment-settings'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -163,12 +164,9 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
       setErrorMessage(null);
 
       try {
-        const url = new URL('/.netlify/functions/admin-list-party-bookings', window.location.origin);
-        if (query.trim()) {
-          url.searchParams.set('search', query.trim());
-        }
+        const url = getApiUrl('admin-list-party-bookings', query.trim() ? { search: query.trim() } : undefined);
 
-        const response = await fetch(url.toString(), {
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -229,7 +227,7 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
     setSuccessNotice(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-update-party-booking-status', {
+      const response = await fetch(getApiUrl('admin-update-party-booking-status'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -280,7 +278,7 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-update-party-booking-status', {
+      const response = await fetch(getApiUrl('admin-update-party-booking-status'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

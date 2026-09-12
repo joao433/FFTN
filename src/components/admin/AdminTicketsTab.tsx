@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAdminLanguage } from '../../lib/adminI18n.tsx';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface TicketRecord {
   id: string;
@@ -61,12 +62,9 @@ export default function AdminTicketsTab({ onSessionExpired }: AdminTicketsTabPro
       setErrorMessage(null);
 
       try {
-        const url = new URL('/.netlify/functions/admin-list-tickets', window.location.origin);
-        if (query.trim()) {
-          url.searchParams.set('search', query.trim());
-        }
+        const url = getApiUrl('admin-list-tickets', query.trim() ? { search: query.trim() } : undefined);
 
-        const response = await fetch(url.toString(), {
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -126,7 +124,7 @@ export default function AdminTicketsTab({ onSessionExpired }: AdminTicketsTabPro
     setSuccessNotice(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-update-ticket-status', {
+      const response = await fetch(getApiUrl('admin-update-ticket-status'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

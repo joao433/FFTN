@@ -8,6 +8,7 @@ import {
   Link as LinkIcon,
   CheckCircle2,
 } from 'lucide-react';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface ImageUploadFieldProps {
   id?: string;
@@ -101,7 +102,7 @@ export default function ImageUploadField({
 
       const base64Data = await base64Promise;
 
-      const response = await fetch('/.netlify/functions/upload-image', {
+      const response = await fetch(getApiUrl('upload-image'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

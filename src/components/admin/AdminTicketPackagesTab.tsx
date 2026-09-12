@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import ImageUploadField from './ImageUploadField.tsx';
 import { useAdminLanguage } from '../../lib/adminI18n.tsx';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface TicketPackage {
   id: string;
@@ -67,7 +68,7 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-ticket-packages', {
+      const response = await fetch(getApiUrl('admin-manage-ticket-packages'), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -156,7 +157,7 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-ticket-packages', {
+      const response = await fetch(getApiUrl('admin-manage-ticket-packages'), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -246,7 +247,7 @@ export default function AdminTicketPackagesTab({ onSessionExpired }: AdminTicket
         payload.active = formActive;
       }
 
-      const response = await fetch('/.netlify/functions/admin-manage-ticket-packages', {
+      const response = await fetch(getApiUrl('admin-manage-ticket-packages'), {
         method,
         headers: {
           Authorization: `Bearer ${token}`,

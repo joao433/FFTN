@@ -23,6 +23,7 @@ import {
   Eye,
 } from 'lucide-react';
 import ImageUploadField from './ImageUploadField.tsx';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface MenuCategory {
   id: string;
@@ -144,7 +145,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-menu', {
+      const response = await fetch(getApiUrl('admin-manage-menu'), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -228,7 +229,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
         active: bannerActive,
       };
 
-      const response = await fetch('/.netlify/functions/admin-manage-menu', {
+      const response = await fetch(getApiUrl('admin-manage-menu'), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -321,7 +322,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
         payload.active = categoryActive;
       }
 
-      const response = await fetch('/.netlify/functions/admin-manage-menu', {
+      const response = await fetch(getApiUrl('admin-manage-menu'), {
         method,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -472,7 +473,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-menu', {
+      const response = await fetch(getApiUrl('admin-manage-menu'), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -616,7 +617,7 @@ export default function AdminMenuTab({ onSessionExpired }: AdminMenuTabProps) {
         payload.available = itemAvailable;
       }
 
-      const response = await fetch('/.netlify/functions/admin-manage-menu', {
+      const response = await fetch(getApiUrl('admin-manage-menu'), {
         method,
         headers: {
           Authorization: `Bearer ${token}`,

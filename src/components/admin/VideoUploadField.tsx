@@ -10,6 +10,7 @@ import {
   Play,
   Trash2,
 } from 'lucide-react';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface VideoUploadFieldProps {
   id?: string;
@@ -66,13 +67,13 @@ export default function VideoUploadField({
       }
 
       // Step 1: Obter Signed Upload URL do backend
-      const queryParams = new URLSearchParams({
+      const uploadUrl = getApiUrl('upload-media', {
         action: 'get-upload-url',
         filename: file.name,
         contentType: file.type || 'video/mp4',
       });
 
-      const urlRes = await fetch(`/.netlify/functions/upload-media?${queryParams.toString()}`, {
+      const urlRes = await fetch(uploadUrl, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,

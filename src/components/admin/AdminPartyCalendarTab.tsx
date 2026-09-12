@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAdminLanguage, ADMIN_MONTH_NAMES, ADMIN_WEEK_DAYS } from '../../lib/adminI18n.tsx';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface CalendarPartyBooking {
   id: string;
@@ -80,7 +81,7 @@ export default function AdminPartyCalendarTab({ onSessionExpired }: AdminPartyCa
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-list-party-bookings', {
+      const response = await fetch(getApiUrl('admin-list-party-bookings'), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -142,7 +143,7 @@ export default function AdminPartyCalendarTab({ onSessionExpired }: AdminPartyCa
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-update-party-booking-status', {
+      const response = await fetch(getApiUrl('admin-update-party-booking-status'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -191,7 +192,7 @@ export default function AdminPartyCalendarTab({ onSessionExpired }: AdminPartyCa
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-update-party-booking-status', {
+      const response = await fetch(getApiUrl('admin-update-party-booking-status'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

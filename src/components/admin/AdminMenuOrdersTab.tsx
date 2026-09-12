@@ -19,6 +19,7 @@ import {
   ArrowRight,
   X,
 } from 'lucide-react';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface MenuOrderItem {
   item_name: string;
@@ -68,12 +69,9 @@ export default function AdminMenuOrdersTab({ onSessionExpired }: AdminMenuOrders
       setErrorMessage(null);
 
       try {
-        const url = new URL('/.netlify/functions/admin-list-menu-orders', window.location.origin);
-        if (query.trim()) {
-          url.searchParams.set('search', query.trim());
-        }
+        const url = getApiUrl('admin-list-menu-orders', query.trim() ? { search: query.trim() } : undefined);
 
-        const response = await fetch(url.toString(), {
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -136,7 +134,7 @@ export default function AdminMenuOrdersTab({ onSessionExpired }: AdminMenuOrders
     setSuccessNotice(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-update-menu-order-status', {
+      const response = await fetch(getApiUrl('admin-update-menu-order-status'), {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

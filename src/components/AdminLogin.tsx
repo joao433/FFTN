@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, Mail, ArrowRight, Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { getApiUrl } from '../lib/api.ts';
 import ParkLogo from './ParkLogo.tsx';
 
 interface AdminLoginProps {
@@ -33,7 +34,7 @@ export default function AdminLogin({ onLoginSuccess, onNavigateHome }: AdminLogi
     setIsLoading(true);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-login', {
+      const response = await fetch(getApiUrl('admin-login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -15,6 +15,7 @@ import {
   Clock,
 } from 'lucide-react';
 import ImageUploadField from './ImageUploadField.tsx';
+import { getApiUrl } from '../../lib/api.ts';
 
 interface PartyPackage {
   id: string;
@@ -68,7 +69,7 @@ export default function AdminPartyPackagesTab({ onSessionExpired }: AdminPartyPa
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-party-packages', {
+      const response = await fetch(getApiUrl('admin-manage-party-packages'), {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -159,7 +160,7 @@ export default function AdminPartyPackagesTab({ onSessionExpired }: AdminPartyPa
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/.netlify/functions/admin-manage-party-packages', {
+      const response = await fetch(getApiUrl('admin-manage-party-packages'), {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -251,7 +252,7 @@ export default function AdminPartyPackagesTab({ onSessionExpired }: AdminPartyPa
         payload.active = formActive;
       }
 
-      const response = await fetch('/.netlify/functions/admin-manage-party-packages', {
+      const response = await fetch(getApiUrl('admin-manage-party-packages'), {
         method,
         headers: {
           Authorization: `Bearer ${token}`,

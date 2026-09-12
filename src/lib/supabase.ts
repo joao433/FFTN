@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getApiUrl } from './api.ts';
 import type {
   TicketPackageModel,
   PartyPackageModel,
@@ -558,7 +559,7 @@ export const DEFAULT_SITE_CONTACT_INFO: SiteContactInfoModel = {
 
 export async function fetchSiteSettings(): Promise<SiteSettingsModel> {
   try {
-    const response = await fetch(`/.netlify/functions/admin-manage-site-settings?_t=${Date.now()}`, {
+    const response = await fetch(getApiUrl('admin-manage-site-settings', { _t: Date.now() }), {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
@@ -642,7 +643,7 @@ export async function saveSiteSettings(
   adminToken: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const response = await fetch('/.netlify/functions/admin-manage-site-settings', {
+    const response = await fetch(getApiUrl('admin-manage-site-settings'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

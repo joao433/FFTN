@@ -37,6 +37,7 @@ import {
   fetchActiveMenuBanner,
   DEFAULT_MENU_BANNER,
 } from '../lib/supabase.ts';
+import { getApiUrl } from '../lib/api.ts';
 import Footer from './Footer.tsx';
 import ItemDetailModal from './ItemDetailModal.tsx';
 import ParkLogo from './ParkLogo.tsx';
@@ -320,7 +321,7 @@ export default function MenuPage({
         quantity: entry.quantity,
       }));
 
-      const response = await fetch('/.netlify/functions/create-menu-checkout-session', {
+      const response = await fetch(getApiUrl('create-menu-checkout-session'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

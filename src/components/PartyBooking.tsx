@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import type { PartyPackageModel } from '../types/database.ts';
 import { fetchActivePartyPackages } from '../lib/supabase.ts';
+import { getApiUrl } from '../lib/api.ts';
 import Footer from './Footer.tsx';
 import ParkLogo from './ParkLogo.tsx';
 import SkeletonCard from './SkeletonCard.tsx';
@@ -131,7 +132,7 @@ export default function PartyBooking({
       try {
         const [pkgs] = await Promise.all([
           fetchActivePartyPackages(),
-          fetch('/.netlify/functions/admin-manage-party-payment-settings')
+          fetch(getApiUrl('admin-manage-party-payment-settings'))
             .then((r) => (r.ok ? r.json() : null))
             .then((data) => {
               if (data) {
@@ -175,7 +176,7 @@ export default function PartyBooking({
     setIsLoadingAvailability(true);
     try {
       const res = await fetch(
-        `/.netlify/functions/get-party-availability?date=${date}&duration=${duration}`
+        getApiUrl('get-party-availability', { date, duration })
       );
       if (res.ok) {
         const data: AvailabilityResponse = await res.json();
@@ -272,7 +273,7 @@ export default function PartyBooking({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/.netlify/functions/create-party-checkout-session', {
+      const response = await fetch(getApiUrl('create-party-checkout-session'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
