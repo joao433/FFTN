@@ -59,6 +59,15 @@ npx supabase functions deploy upload-media --no-verify-jwt
 
 > **Dica:** O parâmetro `--no-verify-jwt` é recomendado porque as funções administrativas já utilizam o `verifyAdminToken` nativo com o token JWT de administrador, e as funções públicas (checkout, disponibilidade) recebem requisições abertas dos clientes.
 
+### Deploy Automático via GitHub Actions
+O repositório já inclui a action `.github/workflows/deploy-supabase-functions.yml`. A cada `push` para a branch `main` que modifique arquivos na pasta `supabase/**`, as funções são publicadas automaticamente.
+
+Para ativar:
+1. No seu repositório no GitHub, vá em **Settings** -> **Secrets and variables** -> **Actions**.
+2. Adicione os seguintes Repository Secrets:
+   - `SUPABASE_ACCESS_TOKEN`: Token de acesso pessoal gerado em [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens).
+   - `SUPABASE_PROJECT_REF`: ID de referência do seu projeto Supabase (encontrado em **Settings** -> **General** no painel do Supabase).
+
 ### Configuração do Webhook no Stripe
 No painel do Stripe:
 1. Vá em **Developers** -> **Webhooks** -> **Add endpoint**.
