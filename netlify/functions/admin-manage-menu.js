@@ -25,6 +25,49 @@ function isValidPositiveInteger(val) {
   return typeof val === 'number' && Number.isInteger(val) && val > 0;
 }
 
+// Helpers to handle featured item & badge metadata seamlessly even before DB columns are migrated
+function extractFeaturedMetadata(rawSubtitle, existingItemId, existingBadgeText) {
+  let cleanSubtitle = rawSubtitle || '';
+  let featuredItemId = existingItemId || null;
+  let featuredBadgeText = existingBadgeText || null;
+
+  if (cleanSubtitle && cleanSubtitle.includes('<!--featured_config:')) {
+    const match = cleanSubtitle.match(/<!--featured_config:(.*?)-->/);
+    if (match && match[1]) {
+      try {
+        const parsed = JSON.parse(match[1]);
+        if (!featuredItemId && parsed.item_id !== undefined) {
+          featuredItemId = parsed.item_id;
+        }
+        if (!featuredBadgeText && parsed.badge_text !== undefined) {
+          featuredBadgeText = parsed.badge_text;
+        }
+      } catch (e) {
+        // ignore JSON parse error
+      }
+    }
+    cleanSubtitle = cleanSubtitle.replace(/\s*<!--featured_config:(.*?)-->/, '').trim();
+  }
+
+  return {
+    subtitle: cleanSubtitle,
+    featured_item_id: featuredItemId,
+    featured_badge_text: featuredBadgeText || 'OFERTA ESPECIAL',
+  };
+}
+
+function embedFeaturedMetadata(rawSubtitle, featuredItemId, featuredBadgeText) {
+  const cleanSubtitle = (rawSubtitle || '').replace(/\s*<!--featured_config:(.*?)-->/, '').trim();
+  if (featuredItemId || (featuredBadgeText && featuredBadgeText !== 'OFERTA ESPECIAL')) {
+    const meta = JSON.stringify({
+      item_id: featuredItemId || null,
+      badge_text: featuredBadgeText || null,
+    });
+    return `${cleanSubtitle}\n<!--featured_config:${meta}-->`;
+  }
+  return cleanSubtitle || null;
+}
+
 export const handler = async (event) => {
   const method = event.httpMethod;
 
@@ -110,6 +153,48 @@ export const handler = async (event) => {
         };
       }
 
+      // Busca banner (se existir tabela)
+      let banner = null;
+      try {
+        const { data: bannerData } = await supabase
+          .from('menu_banner')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (bannerData) {
+          const parsed = extractFeaturedMetadata(
+            bannerData.subtitle,
+            bannerData.featured_item_id,
+            bannerData.featured_badge_text
+          );
+          banner = {
+            id: bannerData.id,
+            title: bannerData.title,
+            subtitle: parsed.subtitle,
+            badge_text: bannerData.badge_text,
+            image_url: bannerData.image_url,
+            featured_item_id: parsed.featured_item_id,
+            featured_badge_text: parsed.featured_badge_text || 'OFERTA ESPECIAL',
+            active: bannerData.active,
+            created_at: bannerData.created_at,
+            updated_at: bannerData.updated_at,
+          };
+        }
+      } catch (bErr) {
+        console.warn('[Admin Manage Menu - GET Banner] Aviso:', bErr);
+      }
+
+      const formattedCategories = (categories || []).map((cat) => ({
+        id: cat.id,
+        name: cat.name,
+        display_order: cat.display_order,
+        active: cat.active,
+        image_url: cat.image_url || null,
+        created_at: cat.created_at,
+        updated_at: cat.updated_at,
+      }));
+
       const formattedItems = (items || []).map((item) => ({
         id: item.id,
         category_id: item.category_id,
@@ -119,6 +204,8 @@ export const handler = async (event) => {
         price_cents: item.price_cents,
         promo_price_cents: item.promo_price_cents,
         image_url: item.image_url,
+        ingredients: item.ingredients || null,
+        variations: item.variations || null,
         display_order: item.display_order,
         available: item.available,
         featured_home: Boolean(item.featured_home),
@@ -130,8 +217,9 @@ export const handler = async (event) => {
         statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          categories: categories || [],
+          categories: formattedCategories,
           items: formattedItems,
+          banner,
         }),
       };
     }
@@ -149,14 +237,183 @@ export const handler = async (event) => {
     }
 
     const { entity } = payload;
-    if (!entity || !['category', 'item'].includes(entity)) {
+    if (!entity || !['category', 'item', 'banner'].includes(entity)) {
       return {
         statusCode: 400,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          error: 'O campo "entity" é obrigatório e deve ser "category" ou "item".',
+          error: 'O campo "entity" é obrigatório e deve ser "category", "item" ou "banner".',
         }),
       };
+    }
+
+    // =========================================================================
+    // BANNER (POST ou PUT para menu_banner)
+    // =========================================================================
+    if (entity === 'banner') {
+      const { title, subtitle, badge_text, image_url, featured_item_id, featured_badge_text, active } = payload;
+      if (!title || typeof title !== 'string' || !title.trim()) {
+        return {
+          statusCode: 400,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'O título do banner é obrigatório.' }),
+        };
+      }
+
+      const cleanItemId = featured_item_id && String(featured_item_id).trim() ? String(featured_item_id).trim() : null;
+      const cleanBadgeText = featured_badge_text && String(featured_badge_text).trim() ? String(featured_badge_text).trim() : null;
+
+      const bannerData = {
+        title: title.trim(),
+        subtitle: subtitle !== undefined ? (subtitle ? String(subtitle).trim() : null) : null,
+        badge_text: badge_text !== undefined ? (badge_text ? String(badge_text).trim() : null) : null,
+        image_url: image_url !== undefined ? (image_url ? String(image_url).trim() : null) : null,
+        featured_item_id: cleanItemId,
+        featured_badge_text: cleanBadgeText,
+        active: active !== undefined ? Boolean(active) : true,
+        updated_at: new Date().toISOString(),
+      };
+
+      try {
+        const { data: existing } = await supabase
+          .from('menu_banner')
+          .select('id')
+          .limit(1)
+          .maybeSingle();
+
+        let saved = null;
+        let saveError = null;
+
+        if (existing?.id) {
+          const { data: updated, error: uErr } = await supabase
+            .from('menu_banner')
+            .update(bannerData)
+            .eq('id', existing.id)
+            .select('*')
+            .maybeSingle();
+
+          if (uErr) {
+            // Check if error is due to missing columns in DB schema cache
+            const isColumnError =
+              String(uErr.message || '').includes('featured_badge_text') ||
+              String(uErr.message || '').includes('featured_item_id') ||
+              uErr.code === 'PGRST204' ||
+              uErr.code === '42703';
+
+            if (isColumnError) {
+              console.warn(
+                '[Admin Manage Menu - Banner] Colunas featured_item_id / featured_badge_text ainda não migradas na tabela menu_banner. Usando fallback de persistência...'
+              );
+              const fallbackData = { ...bannerData };
+              delete fallbackData.featured_item_id;
+              delete fallbackData.featured_badge_text;
+              fallbackData.subtitle = embedFeaturedMetadata(
+                subtitle,
+                cleanItemId,
+                cleanBadgeText
+              );
+
+              const { data: retryUpdated, error: retryErr } = await supabase
+                .from('menu_banner')
+                .update(fallbackData)
+                .eq('id', existing.id)
+                .select('*')
+                .maybeSingle();
+
+              if (retryErr) {
+                saveError = retryErr;
+              } else {
+                saved = retryUpdated;
+              }
+            } else {
+              saveError = uErr;
+            }
+          } else {
+            saved = updated;
+          }
+        } else {
+          // Inserção caso ainda não exista registro
+          const { data: inserted, error: iErr } = await supabase
+            .from('menu_banner')
+            .insert(bannerData)
+            .select('*')
+            .maybeSingle();
+
+          if (iErr) {
+            const isColumnError =
+              String(iErr.message || '').includes('featured_badge_text') ||
+              String(iErr.message || '').includes('featured_item_id') ||
+              iErr.code === 'PGRST204' ||
+              iErr.code === '42703';
+
+            if (isColumnError) {
+              console.warn(
+                '[Admin Manage Menu - Banner Insert] Usando fallback de persistência para colunas novas...'
+              );
+              const fallbackData = { ...bannerData };
+              delete fallbackData.featured_item_id;
+              delete fallbackData.featured_badge_text;
+              fallbackData.subtitle = embedFeaturedMetadata(
+                subtitle,
+                cleanItemId,
+                cleanBadgeText
+              );
+
+              const { data: retryInserted, error: retryErr } = await supabase
+                .from('menu_banner')
+                .insert(fallbackData)
+                .select('*')
+                .maybeSingle();
+
+              if (retryErr) {
+                saveError = retryErr;
+              } else {
+                saved = retryInserted;
+              }
+            } else {
+              saveError = iErr;
+            }
+          } else {
+            saved = inserted;
+          }
+        }
+
+        if (saveError || !saved) {
+          throw saveError || new Error('Não foi possível salvar o banner no banco de dados.');
+        }
+
+        const parsed = extractFeaturedMetadata(
+          saved.subtitle,
+          saved.featured_item_id || cleanItemId,
+          saved.featured_badge_text || cleanBadgeText
+        );
+
+        const responsePayload = {
+          id: saved.id,
+          title: saved.title,
+          subtitle: parsed.subtitle,
+          badge_text: saved.badge_text,
+          image_url: saved.image_url,
+          featured_item_id: parsed.featured_item_id,
+          featured_badge_text: parsed.featured_badge_text || 'OFERTA ESPECIAL',
+          active: saved.active,
+          created_at: saved.created_at,
+          updated_at: saved.updated_at,
+        };
+
+        return {
+          statusCode: 200,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(responsePayload),
+        };
+      } catch (bErr) {
+        console.error('[Admin Manage Menu - Banner] Erro ao salvar banner:', bErr);
+        return {
+          statusCode: 500,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'Erro ao salvar banner do cardápio: ' + (bErr.message || '') }),
+        };
+      }
     }
 
     // =========================================================================
@@ -165,7 +422,7 @@ export const handler = async (event) => {
     if (method === 'POST') {
       // ----------------- CRIAR CATEGORIA -----------------
       if (entity === 'category') {
-        const { name, display_order } = payload;
+        const { name, display_order, image_url } = payload;
 
         if (!name || typeof name !== 'string' || !name.trim()) {
           return {
@@ -185,17 +442,40 @@ export const handler = async (event) => {
 
         const insertData = {
           name: name.trim(),
+          image_url: image_url ? String(image_url).trim() : null,
           display_order: parsedDisplayOrder,
           active: true, // active sempre começa true
         };
 
-        const { data: newCategory, error: insertError } = await supabase
+        let newCategory = null;
+        let insertError = null;
+
+        const { data: insertedCat, error: initialCatError } = await supabase
           .from('menu_categories')
           .insert(insertData)
           .select('*')
           .single();
 
-        if (insertError) {
+        if (initialCatError) {
+          // Se a coluna image_url ainda não existir, tenta sem ela
+          if (String(initialCatError.message || '').includes('image_url') || initialCatError.code === '42703') {
+            const fallbackData = { ...insertData };
+            delete fallbackData.image_url;
+            const { data: retryCat, error: retryError } = await supabase
+              .from('menu_categories')
+              .insert(fallbackData)
+              .select('*')
+              .single();
+            newCategory = retryCat;
+            insertError = retryError;
+          } else {
+            insertError = initialCatError;
+          }
+        } else {
+          newCategory = insertedCat;
+        }
+
+        if (insertError || !newCategory) {
           console.error('[Admin Manage Menu - POST Category] Erro ao inserir:', insertError);
           return {
             statusCode: 500,
@@ -220,6 +500,8 @@ export const handler = async (event) => {
           price_cents,
           promo_price_cents,
           image_url,
+          ingredients,
+          variations,
           display_order,
           featured_home,
         } = payload;
@@ -307,6 +589,8 @@ export const handler = async (event) => {
           price_cents,
           promo_price_cents: validatedPromoPriceCents,
           image_url: image_url ? String(image_url).trim() : null,
+          ingredients: ingredients ? String(ingredients).trim() : null,
+          variations: Array.isArray(variations) ? variations : null,
           display_order: parsedDisplayOrder,
           available: true, // available sempre começa true
           featured_home: isFeaturedHome,
@@ -328,18 +612,21 @@ export const handler = async (event) => {
           .single();
 
         if (initialInsertError) {
-          const isFeaturedHomeError =
+          const isColumnError =
             String(initialInsertError.message || '').includes('featured_home') ||
-            String(initialInsertError.details || '').includes('featured_home') ||
+            String(initialInsertError.message || '').includes('ingredients') ||
+            String(initialInsertError.message || '').includes('variations') ||
             initialInsertError.code === 'PGRST204' ||
             initialInsertError.code === '42703';
 
-          if (isFeaturedHomeError && 'featured_home' in insertData) {
+          if (isColumnError) {
             console.warn(
-              '[Admin Manage Menu - POST Item] Coluna featured_home não encontrada na tabela, tentando salvar sem ela...'
+              '[Admin Manage Menu - POST Item] Tentando salvar sem colunas extras ainda não migradas...'
             );
             const fallbackData = { ...insertData };
             delete fallbackData.featured_home;
+            delete fallbackData.ingredients;
+            delete fallbackData.variations;
 
             const { data: retryItem, error: retryError } = await supabase
               .from('menu_items')
@@ -385,6 +672,8 @@ export const handler = async (event) => {
           price_cents: newItem.price_cents,
           promo_price_cents: newItem.promo_price_cents,
           image_url: newItem.image_url,
+          ingredients: newItem.ingredients || null,
+          variations: newItem.variations || null,
           display_order: newItem.display_order,
           available: newItem.available,
           featured_home: Boolean(newItem.featured_home),
@@ -456,12 +745,38 @@ export const handler = async (event) => {
           updateData.active = active;
         }
 
-        const { data: updatedCategory, error: updateError } = await supabase
+        if (payload.image_url !== undefined) {
+          updateData.image_url = payload.image_url ? String(payload.image_url).trim() : null;
+        }
+
+        let updatedCategory = null;
+        let updateError = null;
+
+        const { data: initialUpdatedCat, error: initialCatUpdateError } = await supabase
           .from('menu_categories')
           .update(updateData)
           .eq('id', id)
           .select('*')
           .maybeSingle();
+
+        if (initialCatUpdateError) {
+          if (String(initialCatUpdateError.message || '').includes('image_url') || initialCatUpdateError.code === '42703') {
+            const fallbackData = { ...updateData };
+            delete fallbackData.image_url;
+            const { data: retryCat, error: retryError } = await supabase
+              .from('menu_categories')
+              .update(fallbackData)
+              .eq('id', id)
+              .select('*')
+              .maybeSingle();
+            updatedCategory = retryCat;
+            updateError = retryError;
+          } else {
+            updateError = initialCatUpdateError;
+          }
+        } else {
+          updatedCategory = initialUpdatedCat;
+        }
 
         if (updateError) {
           console.error('[Admin Manage Menu - PUT Category] Erro ao atualizar:', updateError);
@@ -496,6 +811,8 @@ export const handler = async (event) => {
           price_cents,
           promo_price_cents,
           image_url,
+          ingredients,
+          variations,
           display_order,
           available,
           featured_home,
@@ -661,6 +978,14 @@ export const handler = async (event) => {
           updateData.featured_home = featured_home;
         }
 
+        if (ingredients !== undefined) {
+          updateData.ingredients = ingredients ? String(ingredients).trim() : null;
+        }
+
+        if (variations !== undefined) {
+          updateData.variations = Array.isArray(variations) ? variations : null;
+        }
+
         let updatedItem = null;
         let updateError = null;
 
@@ -678,18 +1003,21 @@ export const handler = async (event) => {
           .maybeSingle();
 
         if (initialUpdateError) {
-          const isFeaturedHomeError =
+          const isColumnError =
             String(initialUpdateError.message || '').includes('featured_home') ||
-            String(initialUpdateError.details || '').includes('featured_home') ||
+            String(initialUpdateError.message || '').includes('ingredients') ||
+            String(initialUpdateError.message || '').includes('variations') ||
             initialUpdateError.code === 'PGRST204' ||
             initialUpdateError.code === '42703';
 
-          if (isFeaturedHomeError && 'featured_home' in updateData) {
+          if (isColumnError) {
             console.warn(
-              '[Admin Manage Menu - PUT Item] Coluna featured_home não encontrada na tabela, tentando atualizar sem ela...'
+              '[Admin Manage Menu - PUT Item] Tentando atualizar sem colunas extras ainda não migradas...'
             );
             const fallbackData = { ...updateData };
             delete fallbackData.featured_home;
+            delete fallbackData.ingredients;
+            delete fallbackData.variations;
 
             const { data: retryItem, error: retryError } = await supabase
               .from('menu_items')
@@ -744,6 +1072,8 @@ export const handler = async (event) => {
           price_cents: updatedItem.price_cents,
           promo_price_cents: updatedItem.promo_price_cents,
           image_url: updatedItem.image_url,
+          ingredients: updatedItem.ingredients || null,
+          variations: updatedItem.variations || null,
           display_order: updatedItem.display_order,
           available: updatedItem.available,
           featured_home: Boolean(updatedItem.featured_home),

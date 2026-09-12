@@ -29,6 +29,19 @@ function getSupabase() {
   });
 }
 
+function timeToMinutes(timeStr) {
+  if (!timeStr || typeof timeStr !== 'string') return null;
+  const parts = timeStr.split(':').map((v) => parseInt(v, 10));
+  if (isNaN(parts[0])) return null;
+  return parts[0] * 60 + (parts[1] || 0);
+}
+
+function minutesToTime(totalMin) {
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 export const handler = async (event) => {
   // 1. Aceita apenas requisições POST
   if (event.httpMethod !== 'POST') {
@@ -43,7 +56,7 @@ export const handler = async (event) => {
   }
 
   try {
-    // 2. Parse e validação do payload JSON recebido no body
+    // 2. Parse e validação do payload JSON
     let payload = {};
     try {
       payload = JSON.parse(event.body || '{}');
@@ -61,6 +74,8 @@ export const handler = async (event) => {
       holder_email,
       holder_phone,
       event_date,
+      start_time = '14:00',
+      payment_type = 'full', // 'none' | 'deposit' | 'full'
       guest_count = 10,
       notes = '',
     } = payload;
@@ -71,14 +86,14 @@ export const handler = async (event) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           error:
-            'Campos obrigatórios faltando. Envie: package_id, holder_name, holder_email, holder_phone e event_date.',
+            'Campos obrigatórios faltando. Envie: package_id, holder_name, holder_email, holder_phone, event_date e start_time.',
         }),
       };
     }
 
     const supabase = getSupabase();
 
-    // 3. Buscar o pacote de festa na tabela party_packages do Supabase
+    // 3. Buscar o pacote de festa
     const { data: pkg, error: pkgError } = await supabase
       .from('party_packages')
       .select('*')
@@ -104,12 +119,178 @@ export const handler = async (event) => {
       };
     }
 
-    // 4. Inserir previamente o registro em party_bookings com status "pending"
+    const packageDuration = Number(pkg.duration_minutes) || 120; // Padrão 2h
+
+    // 4. Validação de horário de funcionamento (10h às 22h)
+    const proposedStartMin = timeToMinutes(start_time);
+    if (proposedStartMin === null || proposedStartMin < 10 * 60 || proposedStartMin > 21 * 60) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: 'Horário de início inválido. O parque funciona das 10:00 às 22:00.',
+        }),
+      };
+    }
+
+    const proposedEndMin = proposedStartMin + packageDuration;
+    if (proposedEndMin > 22 * 60) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          error: `A festa tem duração de ${Math.floor(packageDuration / 60)}h${packageDuration % 60 ? (packageDuration % 60) + 'min' : ''} e precisa terminar antes das 22:00 (fechamento do parque). Escolha um horário mais cedo.`,
+        }),
+      };
+    }
+
+    const computedStartTime = minutesToTime(proposedStartMin);
+    const computedEndTime = minutesToTime(proposedEndMin);
+
+    // 5. TRAVA DE SOBREPOSIÇÃO NO BACKEND (NUNCA DUAS FESTAS NO MESMO HORÁRIO)
+    // O parque só tem 1 salão de festas. Nenhuma reserva ativa pode se sobrepor!
+    const { data: existingBookings, error: checkOverlapError } = await supabase
+      .from('party_bookings')
+      .select('id, start_time, end_time, duration_minutes, status, holder_name')
+      .eq('event_date', event_date)
+      .neq('status', 'canceled');
+
+    if (checkOverlapError) {
+      console.warn('[Create Party Checkout Session] Aviso ao consultar sobreposição:', checkOverlapError);
+    } else if (Array.isArray(existingBookings) && existingBookings.length > 0) {
+      for (const booking of existingBookings) {
+        if (!booking.start_time) continue; // Reservas legadas sem horário
+
+        const existingStartMin = timeToMinutes(booking.start_time);
+        if (existingStartMin === null) continue;
+
+        const existDuration = Number(booking.duration_minutes) || 120;
+        const existingEndMin = booking.end_time ? (timeToMinutes(booking.end_time) || (existingStartMin + existDuration)) : (existingStartMin + existDuration);
+
+        // Verifica intersecção de intervalos [S1, E1) e [S2, E2)
+        // Dois intervalos colidem se: proposedStartMin < existingEndMin && existingStartMin < proposedEndMin
+        if (proposedStartMin < existingEndMin && existingStartMin < proposedEndMin) {
+          const bookedFrom = minutesToTime(existingStartMin);
+          const bookedTo = minutesToTime(existingEndMin);
+          return {
+            statusCode: 409,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              error: `Conflito de horário: o salão de festas já está reservado das ${bookedFrom} às ${bookedTo} nesta data (${event_date}). Por favor, selecione outro horário ou outro dia.`,
+            }),
+          };
+        }
+      }
+    }
+
+    // 6. Consultar configurações de pagamento de festas (party_payment_settings)
+    let paymentSettings = {
+      allow_no_deposit: true,
+      allow_partial_deposit: true,
+      deposit_percentage: 30,
+      allow_full_payment: true,
+    };
+
+    try {
+      const { data: settingsData } = await supabase
+        .from('party_payment_settings')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (settingsData) {
+        paymentSettings = {
+          allow_no_deposit: Boolean(settingsData.allow_no_deposit),
+          allow_partial_deposit: Boolean(settingsData.allow_partial_deposit),
+          deposit_percentage: Number(settingsData.deposit_percentage) || 30,
+          allow_full_payment: Boolean(settingsData.allow_full_payment),
+        };
+      }
+    } catch {
+      // Usa fallback
+    }
+
+    // Valida a opção solicitada
+    const normalizedPaymentType = ['none', 'deposit', 'full'].includes(payment_type) ? payment_type : 'full';
+
+    if (normalizedPaymentType === 'none' && !paymentSettings.allow_no_deposit) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'A opção "Sem entrada" não está disponível no momento.' }),
+      };
+    }
+    if (normalizedPaymentType === 'deposit' && !paymentSettings.allow_partial_deposit) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'A opção de entrada parcial não está disponível no momento.' }),
+      };
+    }
+    if (normalizedPaymentType === 'full' && !paymentSettings.allow_full_payment) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'A opção de pagamento integral não está disponível no momento.' }),
+      };
+    }
+
+    const totalPackagePriceCents = pkg.price_cents;
     const parsedGuestCount = typeof guest_count === 'number' ? guest_count : parseInt(guest_count, 10) || 10;
 
-    const { data: newBooking, error: insertBookingError } = await supabase
+    let amountToChargeCents = totalPackagePriceCents;
+    let initialAmountPaidCents = 0;
+    let initialBalanceDueCents = totalPackagePriceCents;
+
+    if (normalizedPaymentType === 'none') {
+      amountToChargeCents = 0;
+      initialAmountPaidCents = 0;
+      initialBalanceDueCents = totalPackagePriceCents;
+    } else if (normalizedPaymentType === 'deposit') {
+      const percentage = Math.max(5, Math.min(90, paymentSettings.deposit_percentage || 30));
+      amountToChargeCents = Math.round(totalPackagePriceCents * (percentage / 100));
+      initialAmountPaidCents = 0; // Será preenchido quando a Stripe confirmar
+      initialBalanceDueCents = totalPackagePriceCents - amountToChargeCents;
+    } else {
+      // 100% integral
+      amountToChargeCents = totalPackagePriceCents;
+      initialAmountPaidCents = 0; // Será totalPackagePriceCents ao confirmar
+      initialBalanceDueCents = 0;
+    }
+
+    // 7. Inserir previamente o registro em party_bookings
+    // Monta payload completo e faz fallback defensivo se colunas novas ainda não foram migradas
+    const bookingInsertPayload = {
+      package_id: pkg.id,
+      holder_name: holder_name.trim(),
+      holder_email: holder_email.trim().toLowerCase(),
+      holder_phone: holder_phone.trim(),
+      event_date,
+      start_time: computedStartTime,
+      end_time: computedEndTime,
+      duration_minutes: packageDuration,
+      guest_count: parsedGuestCount,
+      notes: notes ? notes.trim() : null,
+      price_cents: totalPackagePriceCents,
+      total_price_cents: totalPackagePriceCents,
+      payment_type: normalizedPaymentType,
+      amount_paid_cents: initialAmountPaidCents,
+      balance_due_cents: initialBalanceDueCents,
+      balance_paid: false,
+      status: 'pending',
+    };
+
+    let newBooking;
+    const { data: insertedData, error: insertBookingError } = await supabase
       .from('party_bookings')
-      .insert({
+      .insert(bookingInsertPayload)
+      .select()
+      .single();
+
+    if (insertBookingError) {
+      console.warn('[Create Party Checkout Session] Falha com campos novos, tentando payload reduzido:', insertBookingError.message);
+      // Tentar sem os novos campos caso a migração ainda não tenha rodado
+      const legacyPayload = {
         package_id: pkg.id,
         holder_name: holder_name.trim(),
         holder_email: holder_email.trim().toLowerCase(),
@@ -117,26 +298,60 @@ export const handler = async (event) => {
         event_date,
         guest_count: parsedGuestCount,
         notes: notes ? notes.trim() : null,
-        price_cents: pkg.price_cents,
+        price_cents: totalPackagePriceCents,
         status: 'pending',
-      })
-      .select()
-      .single();
+      };
 
-    if (insertBookingError) {
-      console.error('[Create Party Checkout Session] Erro ao inserir party_booking:', insertBookingError);
+      const { data: legacyData, error: legacyError } = await supabase
+        .from('party_bookings')
+        .insert(legacyPayload)
+        .select()
+        .single();
+
+      if (legacyError) {
+        console.error('[Create Party Checkout Session] Erro fatal ao inserir party_booking:', legacyError);
+        return {
+          statusCode: 500,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'Erro ao registrar pré-reserva de festa no banco.' }),
+        };
+      }
+      newBooking = legacyData;
+    } else {
+      newBooking = insertedData;
+    }
+
+    const appUrl = process.env.APP_URL || 'https://fftn.netlify.app';
+
+    // 8. Se a opção for SEM ENTRADA, NÃO chamar Stripe! Finaliza direto com sucesso
+    if (normalizedPaymentType === 'none') {
+      const redirectSuccessUrl = `${appUrl}/sucesso?type=party&booking_id=${newBooking.id}&no_deposit=true`;
       return {
-        statusCode: 500,
+        statusCode: 200,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Erro ao registrar pré-reserva de festa.' }),
+        body: JSON.stringify({
+          success: true,
+          payment_type: 'none',
+          booking_id: newBooking.id,
+          redirect_url: redirectSuccessUrl,
+          url: redirectSuccessUrl,
+        }),
       };
     }
 
-    // 5. Criar a Checkout Session na Stripe em USD usando o preço do banco de dados
+    // 9. Se for com entrada parcial ou 100% integral, criar Checkout Session na Stripe em USD
     const stripe = getStripe();
-    const appUrl = process.env.APP_URL || 'https://fftn.netlify.app';
     const successUrl = `${appUrl}/sucesso?session_id={CHECKOUT_SESSION_ID}&type=party`;
     const cancelUrl = `${appUrl}/cancelado?type=party`;
+
+    let productTitle = `Reserva de Festa: ${pkg.name}`;
+    let productDesc = pkg.description || `Reserva para ${parsedGuestCount} convidados das ${computedStartTime} às ${computedEndTime}`;
+
+    if (normalizedPaymentType === 'deposit') {
+      const pct = paymentSettings.deposit_percentage || 30;
+      productTitle = `Entrada (${pct}%) — Festa: ${pkg.name}`;
+      productDesc = `Valor total: $${(totalPackagePriceCents / 100).toFixed(2)}. Saldo restante de $${(initialBalanceDueCents / 100).toFixed(2)} a pagar no parque.`;
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -147,10 +362,10 @@ export const handler = async (event) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Reserva de Festa: ${pkg.name}`,
-              description: pkg.description || `Reserva para ${parsedGuestCount} convidados`,
+              name: productTitle,
+              description: productDesc,
             },
-            unit_amount: pkg.price_cents,
+            unit_amount: amountToChargeCents,
           },
           quantity: 1,
         },
@@ -159,13 +374,19 @@ export const handler = async (event) => {
         package_id: pkg.id,
         type: 'party',
         booking_id: newBooking.id,
+        payment_type: normalizedPaymentType,
+        total_price_cents: String(totalPackagePriceCents),
+        amount_paid_cents: String(amountToChargeCents),
+        balance_due_cents: String(initialBalanceDueCents),
+        start_time: computedStartTime,
+        end_time: computedEndTime,
       },
       success_url: successUrl,
       cancel_url: cancelUrl,
     });
 
-    // 6. Atualizar o registro em party_bookings com o stripe_checkout_session_id gerado
-    const { error: updateBookingError } = await supabase
+    // 10. Atualizar party_bookings com o stripe_checkout_session_id gerado
+    await supabase
       .from('party_bookings')
       .update({
         stripe_checkout_session_id: session.id,
@@ -173,19 +394,10 @@ export const handler = async (event) => {
       })
       .eq('id', newBooking.id);
 
-    if (updateBookingError) {
-      console.error(
-        '[Create Party Checkout Session] Erro ao atualizar party_booking com stripe_checkout_session_id:',
-        updateBookingError
-      );
-    }
-
-    // 7. Retornar a URL de redirecionamento para o frontend
+    // 11. Retornar URL do checkout
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: session.url }),
     };
   } catch (error) {
@@ -193,7 +405,9 @@ export const handler = async (event) => {
     return {
       statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: 'Ocorreu um erro interno no servidor.' }),
+      body: JSON.stringify({
+        error: error instanceof Error ? error.message : 'Ocorreu um erro interno no servidor.',
+      }),
     };
   }
 };

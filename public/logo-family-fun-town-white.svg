@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" width="100%" height="100%">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="fft-w-blue-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="60%" stop-color="#1D6FE0" />
+      <stop offset="100%" stop-color="#124FA6" />
+    </linearGradient>
+
+    <linearGradient id="fft-w-core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+
+    <linearGradient id="fft-w-red-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF333A" />
+      <stop offset="50%" stop-color="#E4141B" />
+      <stop offset="100%" stop-color="#B80B11" />
+    </linearGradient>
+
+    <linearGradient id="fft-w-chrome" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#DDE2EB" />
+      <stop offset="100%" stop-color="#A5B0C2" />
+    </linearGradient>
+
+    <filter id="fft-w-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+
+    <pattern id="fft-w-checkers" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="5" height="5" fill="#141414" />
+      <rect x="5" width="5" height="5" fill="#FFFFFF" />
+      <rect y="5" width="5" height="5" fill="#FFFFFF" />
+      <rect x="5" y="5" width="5" height="5" fill="#141414" />
+    </pattern>
+  </defs>
+
+  <!-- Group 1: Emblem Badge (Left) -->
+  <g transform="translate(10, 4)" filter="url(#fft-w-shadow)">
+    <!-- Racing Flag Left -->
+    <g transform="translate(26, 24) rotate(-22)">
+      <line x1="0" y1="48" x2="0" y2="0" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round" />
+      <path d="M 0 4 Q 18 10 32 4 L 32 30 Q 16 36 0 30 Z" fill="url(#fft-w-checkers)" stroke="#FFFFFF" stroke-width="1" />
+    </g>
+
+    <!-- Racing Flag Right -->
+    <g transform="translate(86, 24) rotate(22)">
+      <line x1="0" y1="48" x2="0" y2="0" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round" />
+      <path d="M 0 4 Q -18 10 -32 4 L -32 30 Q -16 36 0 30 Z" fill="url(#fft-w-checkers)" stroke="#FFFFFF" stroke-width="1" />
+    </g>
+
+    <!-- Outer Blue Circle with crisp White Border -->
+    <circle cx="56" cy="56" r="50" fill="url(#fft-w-blue-ring)" stroke="#FFFFFF" stroke-width="3.5" />
+    
+    <!-- Outer Track Dashed Ring -->
+    <circle cx="56" cy="56" r="45" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="7,4" opacity="0.9" />
+
+    <!-- Inner Core (Crisp Dark Blue/Navy Core for high contrast go-kart) -->
+    <circle cx="56" cy="56" r="37" fill="url(#fft-w-core)" stroke="#FFFFFF" stroke-width="2" />
+
+    <!-- Curving Speed Lines -->
+    <path d="M 28 65 Q 56 46 84 65" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.8" />
+
+    <!-- Go-Kart / Race Car Graphic -->
+    <g transform="translate(22, 38)">
+      <!-- Left Rear Tire -->
+      <rect x="6" y="24" width="10" height="18" rx="4" fill="#141414" stroke="#FFFFFF" stroke-width="1" />
+      <circle cx="11" cy="33" r="3" fill="#E4141B" />
+
+      <!-- Right Rear Tire -->
+      <rect x="52" y="24" width="10" height="18" rx="4" fill="#141414" stroke="#FFFFFF" stroke-width="1" />
+      <circle cx="57" cy="33" r="3" fill="#E4141B" />
+
+      <!-- Front Left Tire -->
+      <rect x="11" y="2" width="7" height="13" rx="3" fill="#141414" stroke="#FFFFFF" stroke-width="0.8" />
+      <!-- Front Right Tire -->
+      <rect x="50" y="2" width="7" height="13" rx="3" fill="#141414" stroke="#FFFFFF" stroke-width="0.8" />
+
+      <!-- Rear Spoiler -->
+      <path d="M 12 36 L 56 36 L 54 41 L 14 41 Z" fill="#FFFFFF" stroke="#141414" stroke-width="1.2" />
+      <rect x="16" y="37" width="36" height="3" fill="url(#fft-w-checkers)" />
+
+      <!-- Kart Main Body (Chassis in Vibrant Red) -->
+      <path d="M 20 28 Q 23 9 34 5 Q 45 9 48 28 Q 50 36 34 37 Q 18 36 20 28 Z" fill="url(#fft-w-red-glow)" stroke="#FFFFFF" stroke-width="2" />
+
+      <!-- Nose Cone & Racing Stripe -->
+      <path d="M 31 6 L 37 6 L 36 22 L 32 22 Z" fill="#FFFFFF" />
+      <path d="M 33 6 L 35 6 L 35 22 L 33 22 Z" fill="#141414" />
+
+      <!-- Driver Helmet -->
+      <circle cx="34" cy="20" r="7.5" fill="#FFFFFF" stroke="#141414" stroke-width="1.5" />
+      <path d="M 30 18 Q 34 16 38 18 L 37.5 22 Q 34 23 30.5 22 Z" fill="#1D6FE0" stroke="#FFFFFF" stroke-width="1" />
+      <!-- Visor reflection -->
+      <path d="M 32 18.5 Q 34 17.5 36.5 18.5" stroke="#FFFFFF" stroke-width="1" fill="none" stroke-linecap="round" />
+
+      <!-- Steering Wheel -->
+      <path d="M 29 25 Q 34 23 39 25" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" />
+
+      <!-- Front Bumper -->
+      <path d="M 16 8 Q 34 2 52 8 L 50 11 Q 34 6 18 11 Z" fill="#FFFFFF" stroke="#141414" stroke-width="1.2" />
+    </g>
+
+    <!-- Tiny Speed Star -->
+    <polygon points="56,12 58,16 63,17 59,20 60,25 56,22 52,25 53,20 49,17 54,16" fill="#FFFFFF" />
+  </g>
+
+  <!-- Group 2: Typography Wordmark (Right) -->
+  <g transform="translate(126, 12)">
+    <!-- Arc "FAMILY" in Pure Crisp White -->
+    <g>
+      <text x="3" y="32" font-family="'Quicksand', 'Arial Black', sans-serif" font-weight="900" font-size="24" fill="#0A2540" letter-spacing="4">FAMILY</text>
+      <text x="2" y="31" font-family="'Quicksand', 'Arial Black', sans-serif" font-weight="900" font-size="24" fill="#FFFFFF" letter-spacing="4">FAMILY</text>
+      
+      <!-- Small decorative stars around FAMILY -->
+      <polygon points="126,17 128,21 133,22 129,25 130,30 126,27 122,30 123,25 119,22 124,21" fill="#FFFFFF" />
+      <polygon points="144,20 145,23 148,24 146,26 146,29 144,27 141,29 142,26 139,24 142,23" fill="#E4141B" />
+    </g>
+
+    <!-- GIANT "FUN" Wordmark in Vibrant Red with White Stroke (Center Hero) -->
+    <g transform="translate(0, 36)" filter="url(#fft-w-shadow)">
+      <!-- FUN Outline / Extrusion effect -->
+      <text x="0" y="44" font-family="'Fredoka', 'Impact', 'Arial Black', sans-serif" font-weight="900" font-size="52" fill="#6B0508" letter-spacing="1">FUN</text>
+      <text x="0" y="42" font-family="'Fredoka', 'Impact', 'Arial Black', sans-serif" font-weight="900" font-size="52" fill="#8F070C" letter-spacing="1">FUN</text>
+      
+      <!-- FUN Main Face in Red with thick crisp White border -->
+      <text x="0" y="40" font-family="'Fredoka', 'Impact', 'Arial Black', sans-serif" font-weight="900" font-size="52" fill="url(#fft-w-red-glow)" stroke="#FFFFFF" stroke-width="2.8" paint-order="stroke fill" letter-spacing="1">FUN</text>
+      
+      <!-- Highlight gleam on FUN -->
+      <text x="0" y="38" font-family="'Fredoka', 'Impact', 'Arial Black', sans-serif" font-weight="900" font-size="52" fill="none" stroke="url(#fft-w-chrome)" stroke-width="0.8" letter-spacing="1" opacity="0.7">FUN</text>
+    </g>
+
+    <!-- "TOWN" Ribbon / Sub-Badge (Bottom) -->
+    <g transform="translate(132, 42)">
+      <!-- Ribbon base -->
+      <rect x="0" y="6" width="138" height="28" rx="6" fill="#141414" stroke="#FFFFFF" stroke-width="2" />
+      <!-- Checker strip on ribbon sides -->
+      <rect x="4" y="9" width="16" height="22" rx="2" fill="url(#fft-w-checkers)" />
+      <rect x="118" y="9" width="16" height="22" rx="2" fill="url(#fft-w-checkers)" />
+      
+      <!-- TOWN Text -->
+      <text x="69" y="26" text-anchor="middle" font-family="'Quicksand', 'Arial Black', sans-serif" font-weight="900" font-size="20" fill="#FFFFFF" letter-spacing="4">TOWN</text>
+    </g>
+
+    <!-- Subtitle tagline under TOWN in crisp white -->
+    <text x="134" y="92" font-family="'Quicksand', sans-serif" font-weight="800" font-size="9.5" fill="#FFFFFF" letter-spacing="2.2" opacity="0.95">PARQUE DE DIVERSÕES &amp; KART</text>
+  </g>
+</svg>

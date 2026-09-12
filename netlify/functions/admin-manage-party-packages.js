@@ -89,6 +89,7 @@ export const handler = async (event) => {
 
       const formatted = (data || []).map((pkg) => ({
         ...pkg,
+        duration_minutes: pkg.duration_minutes || 120,
         featured_home: Boolean(pkg.featured_home),
       }));
 
@@ -115,7 +116,7 @@ export const handler = async (event) => {
     // POST: Criar novo pacote de festa
     // ==========================================
     if (method === 'POST') {
-      const { name, description, price_cents, image_url, display_order, featured_home } = payload;
+      const { name, description, price_cents, duration_minutes, image_url, display_order, featured_home } = payload;
 
       if (!name || typeof name !== 'string' || !name.trim()) {
         return {
@@ -134,6 +135,14 @@ export const handler = async (event) => {
               'O campo price_cents é obrigatório e deve ser um número inteiro positivo representando o valor em centavos (ex: 120000 para $1,200.00).',
           }),
         };
+      }
+
+      let parsedDuration = 120;
+      if (duration_minutes !== undefined && duration_minutes !== null) {
+        const d = Number(duration_minutes);
+        if (Number.isInteger(d) && d >= 30) {
+          parsedDuration = d;
+        }
       }
 
       let parsedDisplayOrder = 0;
@@ -166,13 +175,14 @@ export const handler = async (event) => {
         name: name.trim(),
         description: description ? String(description).trim() : null,
         price_cents,
+        duration_minutes: parsedDuration,
         image_url: image_url ? String(image_url).trim() : null,
         display_order: parsedDisplayOrder,
         active: true, // active sempre começa true na criação
         featured_home: isFeaturedHome,
       };
 
-      const { data: newPackage, error: insertError } = await supabase
+      let { data: newPackage, error: insertError } = await supabase
         .from('party_packages')
         .insert(insertData)
         .select('*')
@@ -181,6 +191,24 @@ export const handler = async (event) => {
       if (insertError) {
         console.error('[Admin Manage Party Packages - POST] Erro ao inserir:', insertError);
 
+        // Se falhou por duration_minutes não existir ainda, tenta sem duration_minutes
+        if (String(insertError.message || '').includes('duration_minutes')) {
+          const fallbackData = { ...insertData };
+          delete fallbackData.duration_minutes;
+          const fallbackRes = await supabase
+            .from('party_packages')
+            .insert(fallbackData)
+            .select('*')
+            .single();
+
+          if (!fallbackRes.error) {
+            newPackage = fallbackRes.data;
+            insertError = null;
+          }
+        }
+      }
+
+      if (insertError) {
         const isMissingColumn =
           String(insertError.message || '').includes('featured_home') ||
           String(insertError.details || '').includes('featured_home') ||
@@ -193,7 +221,7 @@ export const handler = async (event) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               error:
-                "A coluna 'featured_home' ainda não foi criada na tabela party_packages. Execute o script de migração SQL (drizzle/0002_add_ticket_and_party_featured_home.sql) no SQL Editor do Supabase.",
+                "A coluna 'featured_home' ou 'duration_minutes' ainda não foi criada na tabela party_packages. Execute o script de migração SQL (drizzle/0006_party_payment_and_schedule.sql) no SQL Editor do Supabase.",
             }),
           };
         }
@@ -210,6 +238,7 @@ export const handler = async (event) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newPackage,
+          duration_minutes: newPackage.duration_minutes || parsedDuration,
           featured_home: Boolean(newPackage.featured_home),
         }),
       };
@@ -219,7 +248,7 @@ export const handler = async (event) => {
     // PUT: Atualizar pacote de festa existente
     // ==========================================
     if (method === 'PUT') {
-      const { id, name, description, price_cents, image_url, display_order, active, featured_home } = payload;
+      const { id, name, description, price_cents, duration_minutes, image_url, display_order, active, featured_home } = payload;
 
       if (!id || typeof id !== 'string') {
         return {
@@ -319,12 +348,34 @@ export const handler = async (event) => {
         updateData.featured_home = featured_home;
       }
 
-      const { data: updatedPackage, error: updateError } = await supabase
+      if (duration_minutes !== undefined) {
+        const d = Number(duration_minutes);
+        if (Number.isInteger(d) && d >= 30) {
+          updateData.duration_minutes = d;
+        }
+      }
+
+      let { data: updatedPackage, error: updateError } = await supabase
         .from('party_packages')
         .update(updateData)
         .eq('id', id)
         .select('*')
         .maybeSingle();
+
+      if (updateError && String(updateError.message || '').includes('duration_minutes')) {
+        const fallbackUpdate = { ...updateData };
+        delete fallbackUpdate.duration_minutes;
+        const fallbackRes = await supabase
+          .from('party_packages')
+          .update(fallbackUpdate)
+          .eq('id', id)
+          .select('*')
+          .maybeSingle();
+        if (!fallbackRes.error) {
+          updatedPackage = fallbackRes.data;
+          updateError = null;
+        }
+      }
 
       if (updateError) {
         console.error('[Admin Manage Party Packages - PUT] Erro ao atualizar:', updateError);

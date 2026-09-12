@@ -1,11 +1,16 @@
-import React from 'react';
-import { Ticket, Sparkles, Utensils, MapPin, Phone, Mail, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Phone, Mail, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '../lib/i18n.tsx';
+import { fetchSiteSettings, DEFAULT_SITE_CONTACT_INFO } from '../lib/supabase.ts';
+import type { SiteContactInfoModel } from '../types/database.ts';
+import ParkLogo from './ParkLogo.tsx';
 
 interface FooterProps {
   onNavigateToHome?: () => void;
   onNavigateToTickets?: () => void;
   onNavigateToParties?: () => void;
   onNavigateToMenu?: () => void;
+  initialContactInfo?: SiteContactInfoModel;
 }
 
 export default function Footer({
@@ -13,49 +18,76 @@ export default function Footer({
   onNavigateToTickets,
   onNavigateToParties,
   onNavigateToMenu,
+  initialContactInfo,
 }: FooterProps) {
+  const { t } = useLanguage();
+  const [contact, setContact] = useState<SiteContactInfoModel>(
+    initialContactInfo || DEFAULT_SITE_CONTACT_INFO
+  );
+
+  useEffect(() => {
+    if (initialContactInfo) {
+      setContact(initialContactInfo);
+      return;
+    }
+
+    let isMounted = true;
+    fetchSiteSettings()
+      .then((settings) => {
+        if (isMounted && settings?.contact) {
+          setContact(settings.contact);
+        }
+      })
+      .catch(() => {
+        // Fallback already in state
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialContactInfo]);
+
+  const phoneDisplay = contact.phoneSecondary
+    ? `${contact.phonePrimary} / ${contact.phoneSecondary}`
+    : contact.phonePrimary;
+
   return (
-    <footer className="relative z-10 border-t border-white/[0.08] bg-[#07080b] text-neutral-400 text-xs">
+    <footer className="relative z-10 border-t border-[#EADCCF] bg-[#FFFDF9] text-[#7A6C60] text-xs">
       {/* Upper Footer Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12">
           {/* Brand & Identity */}
           <div className="md:col-span-5 space-y-4">
-            <div 
+            <div
               onClick={onNavigateToHome}
-              className="cursor-pointer group inline-flex items-center gap-2.5"
+              className="cursor-pointer group inline-block"
             >
-              <div className="h-6 w-6 rounded-md bg-[#89CFF0] flex items-center justify-center text-black font-black text-xs">
-                <Ticket className="w-3.5 h-3.5 text-black stroke-[2.5]" />
-              </div>
-              <span className="font-extrabold text-base tracking-tight text-white group-hover:text-[#89CFF0] transition-colors">
-                Family Fun Town
-              </span>
+              <ParkLogo size="lg" />
             </div>
-            
-            <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
-              O maior complexo de diversões, atrações radicais, área kids e gastronomia para toda a família. Vouchers digitais instantâneos e checkout 100% seguro.
+
+            <p className="text-xs text-[#7A6C60] leading-relaxed max-w-sm">
+              {t('footer.brand_desc')}
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] font-semibold text-neutral-300">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#89CFF0]" />
-              <span>PAGAMENTO SEGURO VIA STRIPE</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FAF1E4] border border-[#EADCCF] text-[10px] font-semibold text-[#3A2E26]">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#E8734A]" />
+              <span>{t('footer.secure_badge')}</span>
             </div>
           </div>
 
           {/* Column 2: Quick Links */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-neutral-300">
-              Navegação
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#3A2E26]">
+              {t('footer.navigation')}
             </h4>
             <ul className="space-y-2 text-xs">
               {onNavigateToHome && (
                 <li>
                   <button
                     onClick={onNavigateToHome}
-                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
+                    className="hover:text-[#E8734A] transition-colors cursor-pointer text-[#7A6C60]"
                   >
-                    Início
+                    {t('header.home')}
                   </button>
                 </li>
               )}
@@ -63,9 +95,9 @@ export default function Footer({
                 <li>
                   <button
                     onClick={onNavigateToTickets}
-                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
+                    className="hover:text-[#E8734A] transition-colors cursor-pointer text-[#7A6C60]"
                   >
-                    Ingressos & Passaportes
+                    {t('header.tickets')}
                   </button>
                 </li>
               )}
@@ -73,9 +105,9 @@ export default function Footer({
                 <li>
                   <button
                     onClick={onNavigateToParties}
-                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
+                    className="hover:text-[#E8734A] transition-colors cursor-pointer text-[#7A6C60]"
                   >
-                    Festas & Aniversários
+                    {t('header.parties')}
                   </button>
                 </li>
               )}
@@ -83,34 +115,40 @@ export default function Footer({
                 <li>
                   <button
                     onClick={onNavigateToMenu}
-                    className="hover:text-white transition-colors cursor-pointer text-neutral-400"
+                    className="hover:text-[#E8734A] transition-colors cursor-pointer text-[#7A6C60]"
                   >
-                    Cardápio & Praça
+                    {t('header.menu')}
                   </button>
                 </li>
               )}
             </ul>
           </div>
 
-          {/* Column 3: Contato & Localização */}
-          <div className="md:col-span-4 space-y-3">
-            <h4 className="text-[11px] font-bold uppercase tracking-widest text-neutral-300">
-              Atendimento & Localização
+          {/* Column 3: Contato & Localização (Editável pelo Admin) */}
+          <div className="md:col-span-4 space-y-3" id="footer-contact-info-section">
+            <h4 className="text-[11px] font-bold uppercase tracking-widest text-[#3A2E26]">
+              {t('footer.contact_location')}
             </h4>
-            <ul className="space-y-2 text-xs text-neutral-400">
+            <ul className="space-y-2.5 text-xs text-[#7A6C60]">
               <li className="flex items-start gap-2.5">
-                <MapPin className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0 mt-0.5" />
-                <span>
-                  Av. das Atrações, 1500 — Complexo de Lazer
+                <MapPin className="w-3.5 h-3.5 text-[#E8734A] flex-shrink-0 mt-0.5" />
+                <span className="leading-relaxed" id="footer-address">
+                  {contact.address}
                 </span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Phone className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
-                <span>(11) 98765-4321 / (11) 4004-1234</span>
+                <Phone className="w-3.5 h-3.5 text-[#E8734A] flex-shrink-0" />
+                <span id="footer-phone">{phoneDisplay}</span>
               </li>
               <li className="flex items-center gap-2.5">
-                <Mail className="w-3.5 h-3.5 text-neutral-500 flex-shrink-0" />
-                <span>contato@familyfuntown.com</span>
+                <Mail className="w-3.5 h-3.5 text-[#E8734A] flex-shrink-0" />
+                <a
+                  href={`mailto:${contact.email}`}
+                  id="footer-email"
+                  className="hover:text-[#E8734A] transition-colors"
+                >
+                  {contact.email}
+                </a>
               </li>
             </ul>
           </div>
@@ -118,17 +156,18 @@ export default function Footer({
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/[0.06] bg-black/40 py-5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-neutral-500">
-          <div>
-            © 2026 Family Fun Town. Todos os direitos reservados.
+      <div id="footer-bottom-bar" className="border-t border-[#E2E8F0] bg-[#F8FAFC] py-5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px]">
+          <div className="footer-copyright text-[#334155] font-medium">
+            © 2026 Family Fun Town. {t('footer.all_rights')}
           </div>
 
-          <div className="flex items-center gap-1 text-neutral-400 font-medium">
-            <span>Seu Jogo. Seu Momento. Sua Diversão.</span>
+          <div className="footer-slogan flex items-center gap-1 text-[#0F172A] font-semibold">
+            <span>{t('footer.slogan')}</span>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+

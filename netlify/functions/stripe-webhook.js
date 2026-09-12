@@ -156,6 +156,10 @@ export const handler = async (event) => {
     } else if (orderType === 'party') {
       console.log(`[Stripe Webhook] Updating party booking for session: ${sessionId}, package: ${packageId}`);
 
+      const paymentType = metadata.payment_type || 'full';
+      const amountPaid = typeof session.amount_total === 'number' ? session.amount_total : 0;
+      const balanceDueFromMeta = metadata.balance_due_cents !== undefined ? parseInt(metadata.balance_due_cents, 10) : 0;
+
       const updatePayload = {
         status: 'paid',
         updated_at: new Date().toISOString(),
@@ -164,15 +168,35 @@ export const handler = async (event) => {
         updatePayload.stripe_payment_intent_id = paymentIntentId;
       }
 
-      const { data: updatedBooking, error: partyError } = await supabase
+      // Se as novas colunas existirem, registrar detalhes financeiros
+      const richUpdatePayload = {
+        ...updatePayload,
+        payment_type: paymentType,
+        amount_paid_cents: amountPaid,
+        balance_due_cents: paymentType === 'deposit' ? balanceDueFromMeta : 0,
+        balance_paid: paymentType !== 'deposit',
+      };
+
+      let { data: updatedBooking, error: partyError } = await supabase
         .from('party_bookings')
-        .update(updatePayload)
+        .update(richUpdatePayload)
         .eq('stripe_checkout_session_id', sessionId)
         .select();
 
+      // Fallback gracioso caso as novas colunas ainda não tenham sido migradas no Supabase
       if (partyError) {
-        console.error('[Stripe Webhook] Error updating party booking status:', partyError);
-        throw partyError;
+        console.warn('[Stripe Webhook] Falha ao atualizar party_booking com novos campos, tentando payload padrão:', partyError.message);
+        const fallbackRes = await supabase
+          .from('party_bookings')
+          .update(updatePayload)
+          .eq('stripe_checkout_session_id', sessionId)
+          .select();
+        
+        if (fallbackRes.error) {
+          console.error('[Stripe Webhook] Error updating party booking status:', fallbackRes.error);
+          throw fallbackRes.error;
+        }
+        updatedBooking = fallbackRes.data;
       }
 
       console.log('[Stripe Webhook] Party booking updated successfully:', updatedBooking);

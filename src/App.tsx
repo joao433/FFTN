@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { LanguageProvider } from './lib/i18n.tsx';
+import { ThemeProvider } from './lib/theme.tsx';
 import HomePage from './components/HomePage.tsx';
 import TicketPurchase from './components/TicketPurchase.tsx';
 import PartyBooking from './components/PartyBooking.tsx';
@@ -62,61 +64,65 @@ export default function App() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-black">
-      {/* Route Views */}
-      {currentRoute === 'home' && (
-        <HomePage
-          onNavigateToTickets={() => navigateTo('tickets')}
-          onNavigateToParties={() => navigateTo('festas')}
-          onNavigateToMenu={() => navigateTo('cardapio')}
-        />
-      )}
+    <ThemeProvider>
+      <LanguageProvider>
+        <div className="w-full min-h-screen transition-colors duration-200">
+          {/* Route Views */}
+          {currentRoute === 'home' && (
+            <HomePage
+              onNavigateToTickets={() => navigateTo('tickets')}
+              onNavigateToParties={() => navigateTo('festas')}
+              onNavigateToMenu={() => navigateTo('cardapio')}
+            />
+          )}
 
-      {currentRoute === 'tickets' && (
-        <TicketPurchase
-          onNavigateToHome={() => navigateTo('home')}
-          onNavigateToParties={() => navigateTo('festas')}
-          onNavigateToMenu={() => navigateTo('cardapio')}
-        />
-      )}
+          {currentRoute === 'tickets' && (
+            <TicketPurchase
+              onNavigateToHome={() => navigateTo('home')}
+              onNavigateToParties={() => navigateTo('festas')}
+              onNavigateToMenu={() => navigateTo('cardapio')}
+            />
+          )}
 
-      {currentRoute === 'festas' && (
-        <PartyBooking
-          onNavigateToHome={() => navigateTo('home')}
-          onNavigateToTickets={() => navigateTo('tickets')}
-          onNavigateToMenu={() => navigateTo('cardapio')}
-        />
-      )}
+          {currentRoute === 'festas' && (
+            <PartyBooking
+              onNavigateToHome={() => navigateTo('home')}
+              onNavigateToTickets={() => navigateTo('tickets')}
+              onNavigateToMenu={() => navigateTo('cardapio')}
+            />
+          )}
 
-      {currentRoute === 'cardapio' && (
-        <MenuPage
-          onNavigateToHome={() => navigateTo('home')}
-          onNavigateToTickets={() => navigateTo('tickets')}
-          onNavigateToParties={() => navigateTo('festas')}
-        />
-      )}
+          {currentRoute === 'cardapio' && (
+            <MenuPage
+              onNavigateToHome={() => navigateTo('home')}
+              onNavigateToTickets={() => navigateTo('tickets')}
+              onNavigateToParties={() => navigateTo('festas')}
+            />
+          )}
 
-      {currentRoute === 'admin' && (
-        <AdminLogin
-          onLoginSuccess={() => navigateTo('admin-dashboard')}
-          onNavigateHome={() => navigateTo('home')}
-        />
-      )}
+          {currentRoute === 'admin' && (
+            <AdminLogin
+              onLoginSuccess={() => navigateTo('admin-dashboard')}
+              onNavigateHome={() => navigateTo('home')}
+            />
+          )}
 
-      {currentRoute === 'admin-dashboard' && (
-        <AdminDashboard
-          onLogout={() => navigateTo('admin')}
-          onNavigateHome={() => navigateTo('home')}
-        />
-      )}
+          {currentRoute === 'admin-dashboard' && (
+            <AdminDashboard
+              onLogout={() => navigateTo('admin')}
+              onNavigateHome={() => navigateTo('home')}
+            />
+          )}
 
-      {currentRoute === 'sucesso' && (
-        <SuccessView onNavigateHome={() => navigateTo('tickets')} />
-      )}
+          {currentRoute === 'sucesso' && (
+            <SuccessView onNavigateHome={() => navigateTo('tickets')} />
+          )}
 
-      {currentRoute === 'cancelado' && (
-        <CancelView onNavigateHome={() => navigateTo('tickets')} />
-      )}
-    </div>
+          {currentRoute === 'cancelado' && (
+            <CancelView onNavigateHome={() => navigateTo('tickets')} />
+          )}
+        </div>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

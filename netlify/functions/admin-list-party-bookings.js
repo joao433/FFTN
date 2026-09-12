@@ -52,18 +52,11 @@ export const handler = async (event) => {
     let query = supabase
       .from('party_bookings')
       .select(`
-        id,
-        holder_name,
-        holder_email,
-        holder_phone,
-        event_date,
-        guest_count,
-        notes,
-        status,
-        created_at,
+        *,
         party_packages (
           id,
-          name
+          name,
+          duration_minutes
         )
       `)
       .order('event_date', { ascending: true });
@@ -90,19 +83,46 @@ export const handler = async (event) => {
       };
     }
 
-    // 5. Mapear os dados retornando o nome do pacote junto
-    const bookings = (data || []).map((b) => ({
-      id: b.id,
-      holder_name: b.holder_name,
-      holder_email: b.holder_email,
-      holder_phone: b.holder_phone,
-      package_name: b.party_packages?.name || 'Pacote de Festa',
-      event_date: b.event_date,
-      guest_count: b.guest_count,
-      notes: b.notes,
-      status: b.status,
-      created_at: b.created_at,
-    }));
+    // 5. Mapear os dados retornando o nome do pacote e dados financeiros
+    const bookings = (data || []).map((b) => {
+      const pkgDuration = b.party_packages?.duration_minutes || 120;
+      const duration = b.duration_minutes || pkgDuration;
+      const totalPrice = b.total_price_cents !== null && b.total_price_cents !== undefined 
+        ? Number(b.total_price_cents) 
+        : Number(b.price_cents || 0);
+      const amountPaid = b.amount_paid_cents !== null && b.amount_paid_cents !== undefined
+        ? Number(b.amount_paid_cents)
+        : (b.status === 'paid' || b.status === 'confirmed' ? totalPrice : 0);
+      const balanceDue = b.balance_due_cents !== null && b.balance_due_cents !== undefined
+        ? Number(b.balance_due_cents)
+        : (b.status === 'paid' || b.status === 'confirmed' ? 0 : totalPrice);
+      const balancePaid = b.balance_paid !== undefined
+        ? Boolean(b.balance_paid)
+        : (b.status === 'paid' || b.status === 'confirmed');
+
+      return {
+        id: b.id,
+        holder_name: b.holder_name,
+        holder_email: b.holder_email,
+        holder_phone: b.holder_phone,
+        package_id: b.package_id,
+        package_name: b.party_packages?.name || 'Pacote de Festa',
+        event_date: b.event_date,
+        start_time: b.start_time || null,
+        end_time: b.end_time || null,
+        duration_minutes: duration,
+        guest_count: b.guest_count,
+        notes: b.notes,
+        payment_type: b.payment_type || 'full',
+        price_cents: totalPrice,
+        total_price_cents: totalPrice,
+        amount_paid_cents: amountPaid,
+        balance_due_cents: balanceDue,
+        balance_paid: balancePaid,
+        status: b.status,
+        created_at: b.created_at,
+      };
+    });
 
     return {
       statusCode: 200,

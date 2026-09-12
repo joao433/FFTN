@@ -38,32 +38,32 @@ export default function ImageUploadField({
   // Styling accents based on tab/section
   const accentClasses = {
     red: {
-      border: 'hover:border-red-500/50 focus-within:border-red-500',
-      activeBorder: 'border-red-500 bg-red-950/20',
+      border: 'hover:border-red-400 focus-within:border-red-500',
+      activeBorder: 'border-red-500 bg-red-50',
       button: 'bg-red-600 hover:bg-red-500 text-white',
-      badge: 'bg-red-500/10 text-red-400 border-red-500/30',
+      badge: 'bg-red-50 text-red-700 border-red-200',
       ring: 'focus:ring-red-500 focus:border-red-500',
     },
     amber: {
-      border: 'hover:border-amber-500/50 focus-within:border-amber-500',
-      activeBorder: 'border-amber-500 bg-amber-950/20',
-      button: 'bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold',
-      badge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-      ring: 'focus:ring-amber-500 focus:border-amber-500',
+      border: 'hover:border-amber-400 focus-within:border-amber-500',
+      activeBorder: 'border-amber-500 bg-amber-50',
+      button: 'bg-[#F2A94E] hover:bg-[#E0983D] text-[#3A2E26] font-bold font-fredoka',
+      badge: 'bg-[#FAF0E1] text-[#7A6C60] border-[#EADCC9]',
+      ring: 'focus:ring-[#F2A94E] focus:border-[#F2A94E]',
     },
     orange: {
-      border: 'hover:border-orange-500/50 focus-within:border-orange-500',
-      activeBorder: 'border-orange-500 bg-orange-950/20',
-      button: 'bg-orange-600 hover:bg-orange-500 text-white font-bold',
-      badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-      ring: 'focus:ring-orange-500 focus:border-orange-500',
+      border: 'hover:border-orange-400 focus-within:border-orange-500',
+      activeBorder: 'border-orange-500 bg-orange-50',
+      button: 'bg-[#E8734A] hover:bg-[#D26038] text-white font-bold font-fredoka',
+      badge: 'bg-[#FAF0E1] text-[#E8734A] border-[#EADCC9]',
+      ring: 'focus:ring-[#E8734A] focus:border-[#E8734A]',
     },
     blue: {
-      border: 'hover:border-blue-500/50 focus-within:border-blue-500',
-      activeBorder: 'border-blue-500 bg-blue-950/20',
-      button: 'bg-blue-600 hover:bg-blue-500 text-white font-bold',
-      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-      ring: 'focus:ring-blue-500 focus:border-blue-500',
+      border: 'hover:border-[#E8734A]/50 focus-within:border-[#E8734A]',
+      activeBorder: 'border-[#E8734A] bg-[#FAF0E1]',
+      button: 'bg-[#E8734A] hover:bg-[#D26038] text-white font-bold font-fredoka',
+      badge: 'bg-[#FAF0E1] text-[#E8734A] border-[#EADCC9]',
+      ring: 'focus:ring-[#E8734A] focus:border-[#E8734A]',
     },
   }[accentColor];
 
@@ -188,14 +188,14 @@ export default function ImageUploadField({
       <div className="flex items-center justify-between">
         <label
           htmlFor={id}
-          className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300"
+          className="block text-[11px] font-bold uppercase tracking-wider text-slate-700"
         >
           {label}
         </label>
         <button
           type="button"
           onClick={() => setShowManualUrl(!showManualUrl)}
-          className="text-[11px] text-neutral-400 hover:text-neutral-200 transition-colors flex items-center gap-1 cursor-pointer"
+          className="text-[11px] text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 cursor-pointer"
         >
           <LinkIcon className="w-3 h-3" />
           <span>{showManualUrl ? 'Fazer upload de arquivo' : 'Colar link direto'}</span>
@@ -211,9 +211,9 @@ export default function ImageUploadField({
               placeholder="https://exemplo.com/minha-foto.jpg"
               value={manualUrlInput}
               onChange={(e) => setManualUrlInput(e.target.value)}
-              className={`w-full px-3 py-2 pl-8 rounded-xl bg-neutral-950 border border-neutral-800 text-xs text-white placeholder-neutral-600 outline-none ${accentClasses.ring}`}
+              className={`w-full px-3 py-2 pl-8 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder-slate-400 outline-none ${accentClasses.ring}`}
             />
-            <LinkIcon className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5" />
+            <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
           </div>
           <button
             type="button"
@@ -228,8 +228,8 @@ export default function ImageUploadField({
 
       {/* Current Image Preview */}
       {value ? (
-        <div className="relative rounded-xl border border-neutral-800 bg-neutral-950 p-2.5 flex items-center gap-3.5 overflow-hidden group">
-          <div className="w-16 h-16 rounded-lg overflow-hidden bg-neutral-900 border border-neutral-800 flex-shrink-0 relative">
+        <div className="relative rounded-xl border border-slate-200 bg-slate-50 p-2.5 flex items-center gap-3.5 overflow-hidden group">
+          <div className="w-16 h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 relative">
             <img
               src={value}
               alt="Preview"
@@ -238,17 +238,17 @@ export default function ImageUploadField({
               onError={(e) => {
                 // Fallback on broken image
                 (e.target as HTMLImageElement).src =
-                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
               }}
             />
           </div>
 
           <div className="flex-1 min-w-0 pr-2">
-            <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] font-bold">
+            <div className="flex items-center gap-1.5 text-emerald-700 text-[11px] font-bold">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Imagem carregada</span>
             </div>
-            <p className="text-[11px] text-neutral-400 truncate mt-0.5" title={value}>
+            <p className="text-[11px] text-slate-500 truncate mt-0.5" title={value}>
               {value.startsWith('data:') ? 'Arquivo enviado do computador' : value}
             </p>
             <div className="mt-1 flex items-center gap-2">
@@ -256,7 +256,7 @@ export default function ImageUploadField({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="text-[11px] text-neutral-300 hover:text-white underline underline-offset-2 cursor-pointer"
+                className="text-[11px] text-slate-600 hover:text-slate-900 underline underline-offset-2 cursor-pointer"
               >
                 Trocar foto
               </button>
@@ -268,7 +268,7 @@ export default function ImageUploadField({
             id={`${id}-btn-remove`}
             onClick={handleRemoveImage}
             title="Remover imagem"
-            className="p-2 rounded-lg bg-neutral-900 hover:bg-red-950/80 text-neutral-400 hover:text-red-300 border border-neutral-800 transition-colors cursor-pointer flex-shrink-0"
+            className="p-2 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 transition-colors cursor-pointer flex-shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -283,7 +283,7 @@ export default function ImageUploadField({
           className={`relative border-2 border-dashed rounded-xl p-4 sm:p-5 text-center cursor-pointer transition-all ${
             isDragging
               ? accentClasses.activeBorder
-              : `border-neutral-800 bg-neutral-950/60 ${accentClasses.border}`
+              : `border-slate-300 bg-slate-50/70 ${accentClasses.border}`
           }`}
         >
           <input
@@ -298,22 +298,22 @@ export default function ImageUploadField({
 
           {isUploading ? (
             <div className="py-2 flex flex-col items-center justify-center gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-neutral-300" />
-              <span className="text-xs font-semibold text-neutral-300">
+              <Loader2 className="w-6 h-6 animate-spin text-slate-600" />
+              <span className="text-xs font-semibold text-slate-600">
                 Enviando imagem para o servidor...
               </span>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400">
+              <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500">
                 <Upload className="w-5 h-5" />
               </div>
 
               <div>
-                <span className="text-xs font-bold text-neutral-200 block">
+                <span className="text-xs font-bold text-slate-800 block">
                   Clique para escolher uma foto do computador
                 </span>
-                <span className="text-[11px] text-neutral-500 mt-0.5 block">
+                <span className="text-[11px] text-slate-500 mt-0.5 block">
                   ou arraste e solte o arquivo de imagem aqui
                 </span>
               </div>
@@ -324,22 +324,22 @@ export default function ImageUploadField({
 
       {/* Success Notification */}
       {uploadSuccess && (
-        <div className="p-2 rounded-lg bg-emerald-950/60 border border-emerald-800/80 text-emerald-300 text-[11px] flex items-center gap-2">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] flex items-center gap-2">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
           <span>{uploadSuccess}</span>
         </div>
       )}
 
       {/* Error Notification */}
       {uploadError && (
-        <div className="p-2 rounded-lg bg-red-950/60 border border-red-800/80 text-red-300 text-[11px] flex items-center gap-2">
-          <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+        <div className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-[11px] flex items-center gap-2">
+          <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
           <span>{uploadError}</span>
         </div>
       )}
 
       {/* Helper text */}
-      <p className="text-[10px] text-neutral-500">{helperText}</p>
+      <p className="text-[10px] text-slate-400">{helperText}</p>
     </div>
   );
 }

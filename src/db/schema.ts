@@ -108,6 +108,7 @@ export const partyPackages = pgTable(
     name: text('name').notNull(),
     description: text('description'),
     priceCents: integer('price_cents').notNull(),
+    durationMinutes: integer('duration_minutes').default(120).notNull(),
     imageUrl: text('image_url'),
     active: boolean('active').default(true).notNull(),
     featuredHome: boolean('featured_home').default(false).notNull(),
@@ -140,8 +141,16 @@ export const partyBookings = pgTable(
     holderEmail: text('holder_email').notNull(),
     holderPhone: text('holder_phone').notNull(),
     eventDate: text('event_date').notNull(), // YYYY-MM-DD
+    startTime: text('start_time'), // HH:MM
+    endTime: text('end_time'), // HH:MM
+    durationMinutes: integer('duration_minutes').default(120),
     guestCount: integer('guest_count'),
-    priceCents: integer('price_cents'), // Congela o preço na reserva
+    priceCents: integer('price_cents'), // Congela o preço na reserva (legado)
+    totalPriceCents: integer('total_price_cents'), // Valor total do pacote
+    paymentType: text('payment_type').default('full'), // 'none' | 'deposit' | 'full'
+    amountPaidCents: integer('amount_paid_cents').default(0).notNull(),
+    balanceDueCents: integer('balance_due_cents').default(0).notNull(),
+    balancePaid: boolean('balance_paid').default(false).notNull(),
     status: partyBookingStatusEnum('status').default('pending').notNull(),
     stripeCheckoutSessionId: text('stripe_checkout_session_id').unique(),
     stripePaymentIntentId: text('stripe_payment_intent_id'),
@@ -158,7 +167,28 @@ export const partyBookings = pgTable(
     index('party_bookings_holder_phone_idx').on(table.holderPhone),
     index('party_bookings_event_date_idx').on(table.eventDate),
     index('party_bookings_status_idx').on(table.status),
+    index('idx_party_bookings_date_time').on(table.eventDate, table.startTime),
   ]
+);
+
+/**
+ * 4b. party_payment_settings (configurações de pagamento de festas)
+ */
+export const partyPaymentSettings = pgTable(
+  'party_payment_settings',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    allowNoDeposit: boolean('allow_no_deposit').default(true).notNull(),
+    allowPartialDeposit: boolean('allow_partial_deposit').default(true).notNull(),
+    depositPercentage: integer('deposit_percentage').default(30).notNull(),
+    allowFullPayment: boolean('allow_full_payment').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  }
 );
 
 /**
@@ -169,6 +199,7 @@ export const menuCategories = pgTable(
   {
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(),
+    imageUrl: text('image_url'),
     displayOrder: integer('display_order').default(0).notNull(),
     active: boolean('active').default(true).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -199,6 +230,8 @@ export const menuItems = pgTable(
     priceCents: integer('price_cents').notNull(),
     promoPriceCents: integer('promo_price_cents'),
     imageUrl: text('image_url'),
+    ingredients: text('ingredients'),
+    variations: jsonb('variations'),
     displayOrder: integer('display_order').default(0).notNull(),
     available: boolean('available').default(true).notNull(),
     featuredHome: boolean('featured_home').default(false).notNull(),
@@ -214,6 +247,33 @@ export const menuItems = pgTable(
     index('menu_items_available_idx').on(table.available),
     index('menu_items_display_order_idx').on(table.displayOrder),
     index('menu_items_featured_home_idx').on(table.featuredHome),
+  ]
+);
+
+/**
+ * 6.1 menu_banner (banner de destaque do cardápio)
+ */
+export const menuBanner = pgTable(
+  'menu_banner',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    title: text('title').notNull(),
+    subtitle: text('subtitle'),
+    badgeText: text('badge_text'),
+    imageUrl: text('image_url'),
+    featuredItemId: uuid('featured_item_id').references(() => menuItems.id, { onDelete: 'set null' }),
+    featuredBadgeText: text('featured_badge_text'),
+    active: boolean('active').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('menu_banner_active_idx').on(table.active),
+    index('menu_banner_featured_item_id_idx').on(table.featuredItemId),
   ]
 );
 
@@ -261,6 +321,44 @@ export const stripeWebhookEvents = pgTable(
     uniqueIndex('stripe_events_event_id_idx').on(table.stripeEventId),
     index('stripe_events_event_type_idx').on(table.eventType),
   ]
+);
+
+/**
+ * 9. home_settings (configurações do hero da Home, vídeo e fallback)
+ */
+export const homeSettings = pgTable(
+  'home_settings',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    heroVideoUrl: text('hero_video_url'),
+    heroImageUrl: text('hero_image_url'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  }
+);
+
+/**
+ * 10. site_contact_info (informações de contato e endereço do rodapé)
+ */
+export const siteContactInfo = pgTable(
+  'site_contact_info',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    address: text('address').notNull().default('Av. das Atrações, 1500 — Complexo de Lazer'),
+    phonePrimary: text('phone_primary').notNull().default('(11) 98765-4321'),
+    phoneSecondary: text('phone_secondary').default('(11) 4004-1234'),
+    email: text('email').notNull().default('contato@familyfuntown.com'),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  }
 );
 
 /**
@@ -320,8 +418,18 @@ export type NewMenuCategory = typeof menuCategories.$inferInsert;
 export type MenuItem = typeof menuItems.$inferSelect;
 export type NewMenuItem = typeof menuItems.$inferInsert;
 
+export type MenuBanner = typeof menuBanner.$inferSelect;
+export type NewMenuBanner = typeof menuBanner.$inferInsert;
+
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;
 
 export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect;
 export type NewStripeWebhookEvent = typeof stripeWebhookEvents.$inferInsert;
+
+export type HomeSetting = typeof homeSettings.$inferSelect;
+export type NewHomeSetting = typeof homeSettings.$inferInsert;
+
+export type SiteContactInfo = typeof siteContactInfo.$inferSelect;
+export type NewSiteContactInfo = typeof siteContactInfo.$inferInsert;
+

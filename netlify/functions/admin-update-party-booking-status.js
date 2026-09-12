@@ -60,7 +60,7 @@ export const handler = async (event) => {
       };
     }
 
-    const { booking_id, new_status } = payload;
+    const { booking_id, new_status, mark_balance_paid } = payload;
 
     if (!booking_id || typeof booking_id !== 'string') {
       return {
@@ -70,63 +70,112 @@ export const handler = async (event) => {
       };
     }
 
-    if (!new_status || !VALID_STATUSES.includes(new_status)) {
+    if (!mark_balance_paid && (!new_status || !VALID_STATUSES.includes(new_status))) {
       return {
         statusCode: 400,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          error: `Status inválido. Os valores permitidos são: ${VALID_STATUSES.join(', ')}.`,
+          error: `Status inválido ou ausente. Valores permitidos: ${VALID_STATUSES.join(', ')}.`,
         }),
       };
     }
 
     const supabase = getSupabase();
 
-    // 4. Montar o payload de atualização
-    const now = new Date().toISOString();
-    const updatePayload = {
-      status: new_status,
-      updated_at: now,
-    };
-
-    // 5. Executar update no banco
-    const { data: updatedBooking, error: updateError } = await supabase
+    // 4. Buscar a reserva atual para poder calcular quitação
+    const { data: currentBooking, error: fetchErr } = await supabase
       .from('party_bookings')
-      .update(updatePayload)
+      .select('*')
       .eq('id', booking_id)
-      .select(`
-        id,
-        holder_name,
-        holder_email,
-        holder_phone,
-        event_date,
-        guest_count,
-        notes,
-        status,
-        created_at,
-        party_packages (
-          id,
-          name
-        )
-      `)
-      .single();
+      .maybeSingle();
 
-    if (updateError) {
-      console.error('[Admin Update Party Booking] Erro ao atualizar no Supabase:', updateError);
-      return {
-        statusCode: 500,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ error: 'Erro ao atualizar a reserva de festa no banco de dados.' }),
-      };
-    }
-
-    if (!updatedBooking) {
+    if (fetchErr || !currentBooking) {
       return {
         statusCode: 404,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ error: 'Reserva de festa não encontrada.' }),
       };
     }
+
+    const now = new Date().toISOString();
+    const totalPrice = Number(currentBooking.total_price_cents || currentBooking.price_cents || 0);
+
+    // Montar o payload de atualização
+    const updatePayload = {
+      updated_at: now,
+    };
+
+    if (new_status && VALID_STATUSES.includes(new_status)) {
+      updatePayload.status = new_status;
+    }
+
+    // Se a ação for "Marcar restante como pago" (Liquidar no Parque presencialmente)
+    if (mark_balance_paid) {
+      updatePayload.balance_paid = true;
+      updatePayload.balance_due_cents = 0;
+      updatePayload.amount_paid_cents = totalPrice;
+      if (!new_status) {
+        // Se a reserva era pending, promove para confirmed
+        updatePayload.status = currentBooking.status === 'pending' ? 'confirmed' : currentBooking.status;
+      }
+    }
+
+    // 5. Executar update no banco
+    let { data: updatedBooking, error: updateError } = await supabase
+      .from('party_bookings')
+      .update(updatePayload)
+      .eq('id', booking_id)
+      .select(`
+        *,
+        party_packages (
+          id,
+          name,
+          duration_minutes
+        )
+      `)
+      .single();
+
+    // Fallback gracioso caso alguma coluna nova não exista ainda no banco
+    if (updateError) {
+      console.warn('[Admin Update Party Booking] Falha com payload avançado, tentando payload básico:', updateError.message);
+      const basicPayload = {
+        updated_at: now,
+      };
+      if (new_status && VALID_STATUSES.includes(new_status)) {
+        basicPayload.status = new_status;
+      } else if (mark_balance_paid) {
+        basicPayload.status = 'confirmed';
+      }
+
+      const fallbackUpdate = await supabase
+        .from('party_bookings')
+        .update(basicPayload)
+        .eq('id', booking_id)
+        .select(`
+          *,
+          party_packages (
+            id,
+            name
+          )
+        `)
+        .single();
+
+      if (fallbackUpdate.error) {
+        console.error('[Admin Update Party Booking] Erro definitivo:', fallbackUpdate.error);
+        return {
+          statusCode: 500,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: 'Erro ao atualizar a reserva de festa no banco.' }),
+        };
+      }
+      updatedBooking = fallbackUpdate.data;
+    }
+
+    const pkgDuration = updatedBooking.party_packages?.duration_minutes || 120;
+    const duration = updatedBooking.duration_minutes || pkgDuration;
+    const bookingTotal = updatedBooking.total_price_cents !== null && updatedBooking.total_price_cents !== undefined
+      ? Number(updatedBooking.total_price_cents)
+      : Number(updatedBooking.price_cents || 0);
 
     const result = {
       id: updatedBooking.id,
@@ -135,8 +184,17 @@ export const handler = async (event) => {
       holder_phone: updatedBooking.holder_phone,
       package_name: updatedBooking.party_packages?.name || 'Pacote de Festa',
       event_date: updatedBooking.event_date,
+      start_time: updatedBooking.start_time || null,
+      end_time: updatedBooking.end_time || null,
+      duration_minutes: duration,
       guest_count: updatedBooking.guest_count,
       notes: updatedBooking.notes,
+      payment_type: updatedBooking.payment_type || 'full',
+      price_cents: bookingTotal,
+      total_price_cents: bookingTotal,
+      amount_paid_cents: updatedBooking.amount_paid_cents !== undefined ? Number(updatedBooking.amount_paid_cents) : bookingTotal,
+      balance_due_cents: updatedBooking.balance_due_cents !== undefined ? Number(updatedBooking.balance_due_cents) : 0,
+      balance_paid: updatedBooking.balance_paid !== undefined ? Boolean(updatedBooking.balance_paid) : true,
       status: updatedBooking.status,
       created_at: updatedBooking.created_at,
     };
