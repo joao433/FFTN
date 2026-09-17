@@ -1,29 +1,29 @@
 /**
  * Utilitário centralizado para resolução de URLs do backend.
- * Suporta Supabase Edge Functions (produção e Hostinger) e fallback local/Netlify.
+ * Chamadas direcionadas para as Supabase Edge Functions.
  * 
  * Ordem de prioridade para a URL base:
  * 1. import.meta.env.VITE_API_BASE_URL (ex: https://<project-ref>.supabase.co/functions/v1)
- * 2. Derivação automática de import.meta.env.VITE_SUPABASE_URL (adiciona /functions/v1)
- * 3. Fallback relativo para ambientes legados ou proxies locais (/.netlify/functions)
+ * 2. Derivação de import.meta.env.VITE_SUPABASE_URL + '/functions/v1/'
+ * 3. Fallback relativo '/functions/v1'
  */
 
 export function getApiBaseUrl(): string {
   const metaEnv = (import.meta as unknown as { env?: Record<string, string> }).env || {};
 
-  // 1. Variável explícita configurada (Hostinger / Produção)
-  if (metaEnv.VITE_API_BASE_URL && typeof metaEnv.VITE_API_BASE_URL === 'string') {
-    return metaEnv.VITE_API_BASE_URL.replace(/\/+$/, '');
+  // 1. Variável de ambiente VITE_API_BASE_URL (se definida)
+  if (metaEnv.VITE_API_BASE_URL && typeof metaEnv.VITE_API_BASE_URL === 'string' && metaEnv.VITE_API_BASE_URL.trim()) {
+    return metaEnv.VITE_API_BASE_URL.trim().replace(/\/+$/, '');
   }
 
-  // 2. Derivação automática da URL do Supabase
-  if (metaEnv.VITE_SUPABASE_URL && typeof metaEnv.VITE_SUPABASE_URL === 'string') {
-    const cleanUrl = metaEnv.VITE_SUPABASE_URL.replace(/\/+$/, '');
+  // 2. Se não estiver definida, usa import.meta.env.VITE_SUPABASE_URL + '/functions/v1/'
+  if (metaEnv.VITE_SUPABASE_URL && typeof metaEnv.VITE_SUPABASE_URL === 'string' && metaEnv.VITE_SUPABASE_URL.trim()) {
+    const cleanUrl = metaEnv.VITE_SUPABASE_URL.trim().replace(/\/+$/, '');
     return `${cleanUrl}/functions/v1`;
   }
 
-  // 3. Fallback relativo para Netlify Functions ou proxy
-  return '/.netlify/functions';
+  // 3. Fallback padrão para Supabase Edge Functions
+  return '/functions/v1';
 }
 
 /**

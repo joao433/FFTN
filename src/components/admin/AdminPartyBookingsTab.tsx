@@ -147,7 +147,7 @@ export default function AdminPartyBookingsTab({ onSessionExpired }: AdminPartyBo
     }
   };
 
-  // Busca as reservas da Netlify Function
+  // Busca as reservas da Supabase Edge Function
   const fetchBookings = useCallback(
     async (query: string = '', isSilent: boolean = false) => {
       const token = localStorage.getItem('admin_token');

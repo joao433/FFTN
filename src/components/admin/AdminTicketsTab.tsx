@@ -45,7 +45,7 @@ export default function AdminTicketsTab({ onSessionExpired }: AdminTicketsTabPro
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
-  // Busca os ingressos da Netlify Function
+  // Busca os ingressos da Supabase Edge Function
   const fetchTickets = useCallback(
     async (query: string = '', isSilent: boolean = false) => {
       const token = localStorage.getItem('admin_token');

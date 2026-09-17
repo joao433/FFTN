@@ -8,9 +8,12 @@ function netlifyFunctionsPlugin(): Plugin {
     name: 'netlify-functions-dev-middleware',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
-        if (req.url?.startsWith('/.netlify/functions/')) {
+        const isNetlify = req.url?.startsWith('/.netlify/functions/');
+        const isSupabase = req.url?.startsWith('/functions/v1/');
+        if (isNetlify || isSupabase) {
           const urlObj = new URL(req.url, 'http://localhost:3000');
-          const funcName = urlObj.pathname.replace('/.netlify/functions/', '').split('/')[0];
+          const prefix = isNetlify ? '/.netlify/functions/' : '/functions/v1/';
+          const funcName = urlObj.pathname.replace(prefix, '').split('/')[0];
 
           let body = '';
           req.on('data', (chunk) => {

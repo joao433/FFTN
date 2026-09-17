@@ -52,7 +52,7 @@ export default function AdminMenuOrdersTab({ onSessionExpired }: AdminMenuOrders
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
 
-  // Busca os pedidos de cardápio da Netlify Function
+  // Busca os pedidos de cardápio da Supabase Edge Function
   const fetchOrders = useCallback(
     async (query: string = '', isSilent: boolean = false) => {
       const token = localStorage.getItem('admin_token');
